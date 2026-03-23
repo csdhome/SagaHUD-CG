@@ -9,13 +9,9 @@ error.log
 tmp
 docs/
 .history/
-out/development/Saga.yaml
-out/release/Saga.yaml
-out/development/Saga.conf
-out/release/Saga.conf
 screen/
 
-SagaHud.conf
+
 build_tobitege.bat
 saga_dubuild.lua
 util/Codex.lua
