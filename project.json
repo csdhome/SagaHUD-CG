@@ -1,0 +1,52 @@
+{
+  "cli": {
+    "fmtVersion": 5
+  },
+  "name": "Saga",
+  "description": "Saga HUD flight script with autopilote by Sagacious",
+  "version": "4.1.8-CG",
+  "sourcePath": "lua",
+  "outputPath": "out",
+  "libs": [],
+  "builds": [
+    {
+      "name": "Saga",
+      "type": "control",
+      "slots": [
+        {
+          "name": "core",
+          "type": "core",
+          "events": []
+        }
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "name": "development",
+      "handleErrors": false,
+      "minify": false,
+      "stripComments": true,
+      "variables": {
+        "debug": false
+      }
+    },
+    {
+      "name": "release",
+      "handleErrors": false,
+      "minify": true,
+      "stripComments": true,
+      "variables": {
+        "debug": false
+      }
+    }
+  ],
+  "internalPaths": [
+    "autoconf/",
+    "cpml/",
+    "pl/",
+    "utils/event",
+    "atlas",
+    "dkjson"
+  ]
+}
