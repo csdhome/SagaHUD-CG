@@ -4585,25 +4585,70 @@ handlers:
 
       package.preload['Saga:data/tankData.lua']=(function()
 
-      tankData = {}
+      tankData = {
+      	["3273319200"]=100,["1454119315"]=150,["1454119316"]=225,["1454119317"]=338,["1454119318"]=506,
+      	["34191163"]=180,["590217537"]=324,["590217536"]=583,["590217543"]=1050,
+      	["2183619036"]=400,["3401492670"]=600,["3401492671"]=900,["3401492664"]=1350,["3401492665"]=2025,
+      	["3510956948"]=720,["4068567109"]=1296,["4068567110"]=2333,["4068567111"]=4199,
+      	["3464628964"]=1600,["3168321344"]=2400,["3168321345"]=3600,["3168321346"]=5400,["3168321347"]=8100,
+      	["103319202"]=2880,["801882806"]=5184,["801882807"]=9331,["801882804"]=16796,
+      	["3039582547"]=12800,["2746531244"]=19200,["2746530899"]=28800,["2746530898"]=43200,["2746530897"]=64800,
+      	["681896062"]=23040,["4181605365"]=41472,["4181605362"]=74650,["4181605363"]=134369,
+      	["1222088736"]=25600,["2927951827"]=38400,["2927951828"]=57600,["2927951829"]=86400,["2927951830"]=129600,
+      	["483145943"]=82944,["483145936"]=149299,["483145937"]=268739,
+      	["511889587"]=51200,["1477347940"]=76800,["1477347947"]=115200,["1477347946"]=172800,["1477347945"]=259200,
+      	["2351439169"]=165888,["2351439198"]=298598,["2351439199"]=537477,
+      	["2421673145"]=100,["1209489376"]=150,["1209489379"]=225,["1209489378"]=338,["1209489381"]=506,
+      	["2723679405"]=180,["4270367994"]=324,["4270367989"]=583,["4270367988"]=1050,
+      	["1790622152"]=400,["221127573"]=600,["221127574"]=900,["221127575"]=1350,["221127592"]=2025,
+      	["3660622849"]=720,["3135113517"]=1296,["3135113516"]=2333,["3135113519"]=4199,
+      	["773467906"]=1600,["508815657"]=2400,["508815660"]=3600,["508815662"]=5400,["508815663"]=8100,
+      	["2717114417"]=2880,["3797917193"]=5184,["3797917192"]=9331,["3797917195"]=16796,
+      	["2212207656"]=12800,["902756061"]=19200,["902756062"]=28800,["902756063"]=43200,["902756048"]=64800,
+      	["1567224122"]=23040,["1298642304"]=41472,["1298642305"]=74650,["1298642310"]=134369,
+      	["2808052570"]=25600,["951145499"]=38400,["951145496"]=57600,["951145497"]=86400,["951145502"]=129600,
+      	["1578144956"]=46080,["1743805095"]=82944,["1743805088"]=149299,["1743805089"]=268739,
+      	["1114844954"]=51200,["164832043"]=76800,["164832040"]=115200,["164832041"]=172800,["164832046"]=259200,
+      	["2793688129"]=92160,["3463434621"]=165888,["3463434620"]=298598,["3463434623"]=537477,
+      	["1663412227"]=400,["3813625000"]=600,["3813625007"]=900,["3813625006"]=1350,["3813625005"]=2025,
+      	["3043969973"]=720,["2450092460"]=1296,["2450092463"]=2333,["2450092462"]=4199,
+      	["3126840739"]=800,["3734838192"]=1200,["3734838199"]=1800,["3734838198"]=2700,["3734838197"]=4050,
+      	["889007047"]=1440,["3728514394"]=2592,["3728514393"]=4666,["3728514392"]=8398,
+      	["2477859329"]=6400,["1021141162"]=9600,["1021141164"]=14400,["1021141165"]=21600,["1021141167"]=32400,
+      	["2698980247"]=11520,["1592066310"]=20736,["1592066309"]=37325,["1592066308"]=67185,
+      	["4180073139"]=50000,["3742435300"]=75000,["3742435305"]=112500,["3742435307"]=168750,["3742435306"]=253125,
+      	["1651507959"]=90000,["816069278"]=162000,["816069277"]=291600,["816069276"]=524880,
+      	["3369920687"]=100000,["3480500089"]=150000,["3480500088"]=225000,["3480500087"]=337500,["3480500086"]=506250,
+      	["1641389202"]=180000,["1304533250"]=324000,["1304533251"]=583200,["1304533248"]=1049760,
+      	["185927528"]=200000,["1831572141"]=300000,["1831572142"]=450000,["1831572143"]=675000,["1831572128"]=1012500,
+      	["46236687"]=360000,["1300847264"]=648000,["1300847295"]=1166400,["1300847294"]=2099520,
+      	["xs"]=100,["s"]=400,["m"]=1600,["l"]=12800,["xl"]=25600,["xxl"]=51200,
+      }
 
-      local _tdLoaded = false
-
-      local fuelmodifiers = {}
+      local fuelmodifiers = {
+      	["2268129307"]=0.90,["185422505"]=0.81,["185422504"]=0.73,["185422511"]=0.66,
+      	["2078334942"]=0.90,["3464984253"]=0.81,["3464984250"]=0.73,["3464984251"]=0.66,
+      	["2199218873"]=0.90,["121825379"]=0.81,["121825378"]=0.73,["121825381"]=0.66,
+      	["2216300178"]=0.90,["1104915586"]=0.81,["1104915587"]=0.73,["1104915584"]=0.66,
+      	["3529524352"]=0.90,["3095457676"]=0.81,["3095457677"]=0.73,["3095457678"]=0.66,
+      	["3543654510"]=0.90,["1942646249"]=0.81,["1942646246"]=0.73,["1942646247"]=0.66,
+      	["319251893"]=0.90,["2010490156"]=0.81,["2010490159"]=0.73,["2010490158"]=0.66,
+      	["637265250"]=0.90,["55848614"]=0.81,["55848615"]=0.73,["55848612"]=0.66,
+      	["3580444026"]=0.90,["4169669296"]=0.81,["4169669297"]=0.73,["4169669302"]=0.66,
+      	["4106743733"]=0.90,["4188179628"]=0.81,["4188179631"]=0.73,["4188179630"]=0.66,
+      	["1434577302"]=0.90,["1100197959"]=0.81,["1100197956"]=0.73,["1100197957"]=0.66,
+      	["3395562831"]=0.90,["2747266480"]=0.81,["2747266127"]=0.73,["2747266126"]=0.66,
+      	["174756470"]=0.90,["823930495"]=0.81,["823930492"]=0.73,["823930493"]=0.66,
+      	["1823273416"]=0.90,["2285099414"]=0.81,["2285099415"]=0.73,["2285099432"]=0.66,
+      	["4124053688"]=0.90,["3128933538"]=0.81,["3128933539"]=0.73,["3128933540"]=0.66,
+      	["1981586783"]=0.90,["888759388"]=0.81,["888759387"]=0.73,["888759386"]=0.66,
+      	["977883311"]=0.90,["89434488"]=0.81,["89434487"]=0.73,["89434486"]=0.66,
+      	["1499500242"]=0.90,["1439948018"]=0.81,["1439948019"]=0.73,["1439948016"]=0.66,
+      }
 
 
       function loadTankData()
-      	if _tdLoaded then return end
-      	local s, td = pcall(require, "autoconf/custom/sagatankdata")
-      	if s and td then
-      		tankData = td.tankData
-      		fuelmodifiers = td.fuelmodifiers
-      	else
-      		tankData = { ["xs"]=100,["s"]=400,["m"]=1600,["l"]=12800,["xl"]=25600,["xxl"]=51200 }
-      		fuelmodifiers = {}
-      		system.print("[E] sagatankdata not found")
-      	end
-      	_tdLoaded = true
+
       end
 
 
@@ -6517,8 +6562,8 @@ handlers:
 
       	setActiveOption = function(this, entry)
       		local categoryCount = 0
-      				local isCategory = type(entry) == 'table' and entry.key ~= nil
-      				for _, category in ipairs(this.optionCategories) do
+      		local isCategory = type(entry) == 'table' and entry.key ~= nil
+      		for _, category in ipairs(this.optionCategories) do
       			if category.parentKey == this.config.activeCategory and category.key ~= this.config.activeCategory then
       				categoryCount = categoryCount + 1
       				if isCategory and category.key == entry.key then
@@ -6558,8 +6603,8 @@ handlers:
       		local optionOuterHeight = optionHeight + optionMargin
       		local headerHeight = this.config.headerHeight * HUDScale
       		local headerPadding = 4 * HUDScale
-      				local headerYMidFirst = mfloor(optionHeight / 2)
-      				local headerYEnd = mfloor(headerHeight - headerPadding)
+      		local headerYMidFirst = mfloor(optionHeight / 2)
+      		local headerYEnd = mfloor(headerHeight - headerPadding)
       		html[#html+1] = '<text class="outlined" x="' .. headerPadding .. '" y="' .. (headerYMidFirst) .. '">' .. parentString .. '</text>'
       		html[#html+1] = '<rect class="separator" x=' .. headerPadding .. '" y="' .. (headerYEnd) .. '" width="' .. (this.config.optionWidth * HUDScale) .. '" height="1" />'
 
@@ -6695,7 +6740,7 @@ handlers:
       		if actions.input ~= nil then actionsArr[#actionsArr+1] = {action = actions.input} end
 
       		local HUDScale = HUD.Config.scaleMultiplier
-      						local optionMargin = this.config.optionMargin * HUDScale
+      		local optionMargin = this.config.optionMargin * HUDScale
       		local rowHeight = 10 * HUDScale
       		local keyX = 50 * HUDScale
       		local textX = keyX + 12 * HUDScale
@@ -6755,7 +6800,7 @@ handlers:
       		local dataString = ' ' .. tconcat(dataParams, ' ')
       		local classString = class('menuOption')
 
-      				local optionWidth = this.config.optionWidth * HUDScale
+      		local optionWidth = this.config.optionWidth * HUDScale
       		local optionHeight = this.config.optionHeight * HUDScale
       		local optionMargin = this.config.optionMargin * HUDScale
       		local optionOuterHeight = optionHeight + optionMargin
@@ -6768,7 +6813,7 @@ handlers:
       		local optionYEnd = mfloor(optionYStart + optionHeight)
       		local optionXStart = 0
       		local optionXStartPad = mfloor(optionMargin)
-      				local optionXEnd = mfloor(optionWidth)
+      		local optionXEnd = mfloor(optionWidth)
       		local optionXEndPad = mfloor(optionWidth - optionMargin)
 
       		html[#html+1] = '<g' .. classString .. dataString .. '>'
@@ -6784,11 +6829,12 @@ handlers:
 
       				if hovering then
       			local tweenTime = 0.2
-      			local optionChangeT = (now - this.lastOptionChangeTime) / tweenTime 			optionChangeT = clamp(optionChangeT, 0, 1)
+      			local optionChangeT = (now - this.lastOptionChangeTime) / tweenTime
+      			optionChangeT = clamp(optionChangeT, 0, 1)
 
-      						cornerPadding = 2 * (1 - optionChangeT)
+      			cornerPadding = 2 * (1 - optionChangeT)
 
-      						local heightNow = optionChangeT * optionHeight
+      			local heightNow = optionChangeT * optionHeight
       			local heightMid = optionYMid - heightNow / 2
       			html[#html+1] = '<rect x="0" y="' .. heightMid .. '" width="' .. (optionWidth - valueXPad) .. '" height="' .. heightNow .. '" />'
 
@@ -6800,10 +6846,16 @@ handlers:
 
       				if active then
       			cornerLength = cornerLength * 2
-      					end
+      		end
 
-      				local boxCornerLinesInner = generateRectCorners(
-      			optionXStart + cornerPadding, 			optionYStart + cornerPadding, 			optionXEnd - cornerPadding - valueXPad, 			optionYEnd - cornerPadding, 			cornerLength, 			lineWidth 		)
+      		local boxCornerLinesInner = generateRectCorners(
+      			optionXStart + cornerPadding,
+      			optionYStart + cornerPadding,
+      			optionXEnd - cornerPadding - valueXPad,
+      			optionYEnd - cornerPadding,
+      			cornerLength,
+      			lineWidth
+      		)
 
       		if active or hovering then
       			html[#html+1] = boxCornerLinesInner
@@ -6850,11 +6902,11 @@ handlers:
       	renderTooltip = function(this, yPos, showSeparator)
       		if this.hoveredEntry.actions == nil or this.hoveredEntry.actions.tooltip == nil then return end
 
-      				local html = {}
+      		local html = {}
 
       		local HUDScale = HUD.Config.scaleMultiplier
       		local optionWidth = this.config.optionWidth * HUDScale
-      						local rowHeight = 11 * HUDScale
+      		local rowHeight = 11 * HUDScale
       		local startY = 10 * HUDScale + yPos
       		local textX = 10 * HUDScale
       		local separatorMargin = 5 * HUDScale
@@ -6919,7 +6971,7 @@ handlers:
       				this:openCategory(currentCategory.parentKey, currentCategory)
       			else
       				this:openCategory(nil, currentCategory)
-      							end
+      			end
 
       						if hoveredEntry ~= nil and hoveredEntry.actions ~= nil and hoveredEntry.actions.back ~= nil then
       				currentCategory.actions.back.func(currentCategory, currentCategory.actions.back.arg)
@@ -6930,7 +6982,7 @@ handlers:
       		end
       		if rightTriggered then
       			this.lastInputTimes.right = now
-      									local hoveredEntry = this.hoveredEntry
+      			local hoveredEntry = this.hoveredEntry
       			if hoveredEntry ~= nil then
       				if hoveredEntry.actions == nil and hoveredEntry.key ~= nil then
       					this:openCategory(hoveredEntry.key)
@@ -7179,27 +7231,219 @@ handlers:
 
       package.preload['Saga:hud/static_svg.lua']=(function()
 
-      local s, svg = pcall(require, "autoconf/custom/sagastaticsvg")
-
-      if s and svg then
-          HUD.staticSVG = svg
-      else
-          HUD.staticSVG = {}
-          system.print("[E] sagastaticsvg not found")
-      end
+      HUD.staticSVG = {
+          categoryIndicator = '<path d="M0,0 L0,100 L100,50 Z"/>',
+          upKey = '<path class="menuLegendKey" d="M50,0 L0,100 L100,100 Z"/>',
+          downKey = '<path class="menuLegendKey" d="M0,0 L100,0 L50,100 Z"/>',
+          rightKey = '<path class="menuLegendKey" d="M0,0 L0,100 L100,50 Z"/>',
+          leftKey = '<path class="menuLegendKey" d="M0,50 L100,100 L100,0 Z"/>',
+          upDownKey = '<path class="menuLegendKey" d="M0,0 L50,100 L-50,100 Z"/><path class="menuLegendKey" d="M50,0 L150,0 L100,100 Z"/>',
+          checkBoxChecked = '<rect class="checkBox checked" width="100" height="100" y="0"/>',
+          checkBoxUnchecked = '<rect class="checkBox" width="100" height="100" y="0"/>',
+          editableBg = '<rect class="editableBg" width="100" height="100"/>',
+          editableGlyph = '<rect class="editableGlyph" width="80" height="15" x="10" y="75"/>',
+          progradeReticle = [[
+              <svg viewBox="0 0 100 100">
+              <circle style="stroke-width: 4px; stroke: rgb(20, 220, 40); fill: none;" cx="75" cy="75" r="33.333" transform="matrix(1, 0, 0, 0.999999, -24.999976, -24.999961)" bx:origin="0.331 0.224"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 83.333 50 L 100 50" bx:origin="-2.677 0"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 60.767 50 L 77.433 50" transform="matrix(-1, 0, 0, -1, 77.435763, 100.000003)" bx:origin="-1.323 0"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 101.733 31.6 L 118.4 31.6" transform="matrix(0, 1, -1, 0, 81.598635, -18.398635)" bx:origin="-3.104 0"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 64.933 31.6 L 81.6 31.6" transform="matrix(0, -1, 1, 0, 18.399367, 81.599368)" bx:origin="-0.896 0"/>
+              <circle style="fill: rgb(46, 139, 87); fill-opacity: 0; stroke: rgb(20, 220, 40); stroke-width: 2px;" cx="50" cy="50" r="2.5" bx:origin="0.5 0.5"/>
+              </svg>
+          ]],
+          retrogradeReticle = [[
+              <svg viewBox="125 125 150 150">
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 150 150 L 250 250" bx:origin="0.5 0.5"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 150 150 L 250 250" transform="matrix(0, 1, -1, 0, 400.000012, 0)" bx:origin="0.5 0.5"/>
+              <circle style="stroke-width: 4px; stroke: rgb(20, 220, 40); fill: none;" cx="200" cy="200" r="50"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 250 200 L 275 200"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 125 200 L 150 200" transform="matrix(-1, 0, 0, -1, 275.000008, 400.000012)"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 249.725 200.275 L 274.725 200.275" transform="matrix(0, 1, -1, 0, 400.275006, 0.274988)" bx:origin="-1.989 0"/>
+              <path style="fill: rgb(46, 139, 87); stroke-width: 4px; stroke: rgb(20, 220, 40);" d="M 250.275 200.275 L 275.275 200.275" transform="matrix(0, -1, 1, 0, -0.275, 400.275006)" bx:origin="-2.011 0"/>
+              </svg>
+          ]],
+          targetReticle = [[
+              <svg viewBox="-62.5 -62.5 125 125">
+              <path d="M 62.5 0 A 62.5 62.5 0 0 1 0 62.5 A 62.5 62.5 0 0 1 -62.5 0 A 62.5 62.5 0 0 1 0 -62.5 A 62.5 62.5 0 0 1 62.5 0 Z" style="fill: none; stroke-dasharray: 65; stroke: rgb(246, 0, 254); stroke-width: 6px;"/>
+              <path d="M 5 0 A 5 5 0 0 1 0 5 A 5 5 0 0 1 -5 0 A 5 5 0 0 1 0 -5 A 5 5 0 0 1 5 0 Z" style="fill: rgb(246, 0, 254); stroke: rgb(246, 0, 254);"/>
+              </svg>
+          ]],
+          maneuverNode = [[
+              <svg viewBox="-3.175 0 106.391 103.181">
+              <path style="fill: rgb(216, 216, 216); stroke-width: 5px; stroke: rgb(21, 0, 255);" d="M 22.767 1.724 L 76.628 1.715" transform="matrix(-1, 0, 0, -1, 99.718166, 3.439)" bx:origin="0.5 -5363.962451"/>
+              <path style="fill: rgb(216, 216, 216); stroke: rgb(21, 0, 255); stroke-width: 3px;" d="M 34.86 15.167 L 65.007 15.161" transform="matrix(0, 1, -1, 0, 65.187944, -34.859944)" bx:origin="1.658538 1.046562"/>
+              <path d="M 52.5 50 C 52.5 51.381 51.38 52.5 50 52.5 C 48.619 52.5 47.5 51.381 47.5 50 C 47.5 48.619 48.619 47.5 50 47.5 C 51.38 47.5 52.5 48.619 52.5 50 Z" style="stroke: rgb(21, 0, 255); fill: rgb(21, 0, 255);" bx:origin="0 0"/>
+              <path style="fill: rgb(216, 216, 216); stroke-width: 5px; stroke: rgb(21, 0, 255);" d="M 23.09 98.285 L 76.951 98.276" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, -20.694729, 50.010377)" bx:origin="0.5 -5363.962451"/>
+              <path style="fill: rgb(216, 216, 216); stroke: rgb(21, 0, 255); stroke-width: 3px;" d="M 0.021 50 L 30.168 49.994" transform="matrix(-0.707107, -0.707107, 0.707107, -0.707107, 50.035558, 120.725971)" bx:origin="1.658538 1.046562"/>
+              <path style="fill: rgb(216, 216, 216); stroke-width: 5px; stroke: rgb(21, 0, 255);" d="M 23.09 98.285 L 76.951 98.276" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 49.996057, -20.729293)" bx:origin="0.5 -5363.962451"/>
+              <path style="fill: rgb(216, 216, 216); stroke: rgb(21, 0, 255); stroke-width: 3px;" d="M 0.021 50 L 30.168 49.994" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, -20.704741, 50.014894)" bx:origin="1.658538 1.046562"/>
+              </svg>
+          ]],
+          centerofMass = [[
+              <svg viewBox="-74.652 -64 148.511 131.373" >
+              <path style="fill: rgb(216, 216, 216); stroke-width: 5px; stroke: rgb(255, 60, 0);" d="M -42.75 -62.99 L 42.25 -63" transform="matrix(-1, 0, 0, -1, 0.01, -125.990009)" bx:origin="0.503 0.5"/>
+              <path style="fill: rgb(216, 216, 216); stroke: rgb(255, 60, 0); stroke-width: 3px;" d="M -17.6 -46.39 L 17.4 -46.4" transform="matrix(0, 1, -1, 0, -46.390001, -46.400003)" bx:origin="0.503 0.5"/>
+              <path style="fill: rgb(216, 216, 216); stroke-width: 5px; stroke: rgb(255, 60, 0);" d="M 9.977 30.349 L 94.977 30.339" transform="matrix(0.5, -0.866025, 0.866025, 0.5, 0.08732, 60.839247)" bx:origin="0.503 0.5"/>
+              <path style="fill: rgb(216, 216, 216); stroke: rgb(255, 60, 0); stroke-width: 3px;" d="M 20.751 22.051 L 55.751 22.041" transform="matrix(-0.866025, -0.5, 0.5, -0.866025, 60.550264, 60.316404)" bx:origin="0.503 0.5"/>
+              <path style="fill: rgb(216, 216, 216); stroke-width: 5px; stroke: rgb(255, 60, 0);" d="M -96.025 30.583 L -11.025 30.573" transform="matrix(0.5, 0.866025, -0.866025, 0.5, -0.153671, 61.422167)" bx:origin="0.503 0.5"/>
+              <path style="fill: rgb(216, 216, 216); stroke: rgb(255, 60, 0); stroke-width: 3px;" d="M -56.499 22.283 L -21.499 22.273" transform="matrix(0.866025, -0.5, 0.5, 0.866025, -16.349816, -16.462319)" bx:origin="0.503 0.5"/>
+              <path d="M 5 0 A 5 5 0 0 1 0 5 A 5 5 0 0 1 -5 0 A 5 5 0 0 1 0 -5 A 5 5 0 0 1 5 0 Z" style="stroke: rgb(255, 60, 0); fill: rgb(255, 60, 0);"/>
+              </svg>
+          ]]
+      }
 
       end)
 
       package.preload['Saga:hud/static_css.lua']=(function()
 
       function HUD.refreshStaticCss()
-      	local s, fn = pcall(require, "autoconf/custom/sagastaticcss")
-      	if s and fn then
-      		fn(HUD, gradient)
-      	else
-      		HUD.staticCSS = { gradientDefs = "", menuCss = "", css = "" }
-      		system.print("[E] sagastaticcss not found")
-      	end
+      	local cnf, sat, hue = HUD.Config, HUD.Config.saturation, HUD.Config.mainHue
+      	local s3, s4, s5 = sat*30, sat*40, sat*50
+      	HUD.staticCSS = {
+      		gradientDefs = [[
+      ]]..gradient('mainBg', {
+      	[0] = 'hsl('..hue..','..s4..'%,10%)',
+      	[100] = 'hsl('..hue..','..s4..'%,5%)',
+      }, true)..[[
+
+      ]]..gradient('bg', {
+      	[0] = 'hsl('..hue..','..s3..'%,15%)',
+      	[100] = 'hsl('..hue..','..s3..'%,10%)',
+      }, true)..[[
+
+      ]]..gradient('bgTransparent', {
+      	[0] = {'hsl('..hue..','..s4..'%,15%)', 0.5},
+      	[100] = {'hsl('..hue..','..s4..'%,10%)', 0.5},
+      }, true)..[[
+
+      ]]..gradient('bgStroke', {
+      	[10] = 'hsl('..hue..','..s5..'%,50%)',
+      	[90] = 'hsl('..hue..','..s4..'%,40%)',
+      }, true)..[[
+
+      ]]..gradient('fadeToBg', {
+      	[60] = 'hsl('..hue..','..s4..'%,20%)',
+      	[90] = 'hsl('..hue..','..s4..'%,15%)',
+      }, true)..[[
+
+      ]]..gradient('fadeToBgStroke', {
+      	[60] = 'hsl('..hue..','..s5..'%,50%)',
+      	[90] = 'hsl('..hue..','..s4..'%,15%)',
+      }, true)..[[
+      		]],
+      		menuCss = [[
+      .mainMenu {font-size:]]..(cnf.scaleMultiplier * 10)..[[px;font-family: 'Montserrat'}
+
+      .mainMenu text { alignment-baseline: middle;text-shadow: none;stroke-width: 0;white-space: pre;fill: hsl(0,0%,95%);text-anchor: start}
+
+      .menuOption text {alignment-baseline: central}
+
+      text.valueText {text-anchor: end}
+
+      .mainMenu path {fill:hsla(]]..hue..[[,]]..s5..[[%,80%,0.5)} ]]..
+
+      [[
+
+      [data-hover=true] text {fill:hsl(]]..hue..[[,]]..s5..[[%,100%)}
+
+      [data-hover=true] rect {fill:hsla(]]..hue..[[,]]..s5..[[%,50%,0.5)}
+
+      [data-hover=true] path {fill:hsla(]]..hue..[[,]]..s5..[[%,100%,0.7)}
+
+      [data-hover=true] rect.separator {fill: hsl(0,0%,85%)}
+
+      /* active */
+
+      [data-active=true] rect.separator {fill: hsl(0,0%,100%)}
+
+      /* active hover */
+
+      [data-active=true][data-hover=true] rect{}
+
+      rect.inputHold {fill:hsl(0,0%,75%) }
+
+      text.outlined {text-shadow:0 0 1vh black}
+
+      rect.separator {fill:hsl(0,0%,100%)}
+
+      rect.checkBox {fill:hsl(0,0%,70%)}
+
+      rect.checkBox.checked {fill:hsl(0,0%,100%)}
+
+      rect.editableBg {fill:hsla(0,0%,0%,0.3)}
+
+      rect.editableGlyph {fill:hsl(0,0%,95%)}
+
+      .menuLegendGlyph {overflow:visible}
+
+      text.menuLegendText {fill:hsl(0,0%,88%)}
+
+      text.menuLegendKey {fill:hsl(58,89%,44%);text-anchor:end}
+
+      path.menuLegendKey {fill:hsl(0,0%,95%)}
+
+      .menuLegend[data-active=true] text, .menuLegend[data-active=true] path {fill:hsl(0,0%,100%)}
+
+      ]],
+      	css = [[
+      .widget {
+      	position: absolute;
+      	white-space: pre;
+      	font-size: ]]..(cnf.scaleMultiplier*10)..[[px;
+      	font-family: 'Montserrat';
+      	color: hsl(0,0%,95%);
+      	background-color: hsla(0,0%,0%,0.2);
+      	border:0.1vh solid hsl(0,0%,95%);
+      	text-shadow: 0.2vh 0.2vh 1vh black;
+      	padding: ]]..(cnf.scaleMultiplier*5)..[[px;
+      }
+
+      .widget.alert {border-color: hsl(16,100%,50%)}
+
+      .radarRow {display: relative;height: 1.2vh}
+
+      .radarText {position: absolute;overflow: hidden}
+
+      .coreInfo {text-align: center}
+
+      .dottext {position:absolute; width:6vh; height:6vh; left:-6vh; top:-6vh; border-radius:1vh}
+
+      .dot {position:absolute; width:3vh; height:3vh; left:-1.5vh; top:-1.5vh; border-radius:1vh}
+
+      .planets {position:absolute; width:2vh; height:2vh; left:-1vh; top:-1vh; border-radius:1vh}
+
+      .ptext {position:absolute; width:3vh; height:3vh; left:-1.5vh; top:-3vh; border-radius:1vh}
+
+      .mtext {position:absolute; width:3vh; height:3vh; left:-1.5vh; top:3vh; border-radius:1vh}
+
+      .collision {position:absolute; top:94vh; right:80vw; width:18vw; padding-left: 1vh; padding-top: 1vh; padding-right: 1vh; padding-bottom: 1vh; border:0.1vh; border-style: solid; border-color: orangered}
+
+      .radar1 {position:absolute; top:83vh; right:25vw; width:12vw; padding-left: 1vh; padding-right: 1vh; padding-top: 1vh; padding-bottom: 1vh; border:0.1vh; border-style: solid; border-color: ivory}
+
+      .radar2 {position:absolute; top:83vh; right:38vw; width:12vw; padding-left: 1vh; padding-right: 1vh; padding-top: 1vh; padding-bottom: 1vh; border:0.1vh; border-style: solid; border-color: ivory}
+
+      .radar3 {position:absolute; top:83vh; right:51vw; width:12vw; padding-left: 1vh; padding-right: 1vh; padding-top: 1vh; padding-bottom: 1vh; border:0.1vh; border-style: solid; border-color: ivory}
+
+      .speedBar{position:absolute; width:11.5vh; height:11.5vh; left:32vh; top:-12vh; border-radius:1vh;}
+
+      .throttleBar{position:absolute; width:11.5vh; height:11.5vh; left:37vh; top:-8vh; border-radius:1vh;}
+
+      .altBar{position:absolute; width:14vh; height:11.5vh; left:-43vh; top:-12vh; border-radius:1vh;}
+
+      .svg {background: #eee;}
+
+
+      .atmoAlert	{position:absolute; top:74vh;	right:62.9vw;	width:10vw; padding:0.2vh; border:0.2vh;
+      	font-size: 1vh;color: ivory; text-shadow:0.2vh 0.2vh 1vh black;}
+      .apAlert	{position:absolute; top:25vh;	left:72vw;	width:10vw; padding: 1vh;
+      	border:0.2vh; border-style: solid; border-color: orangered}
+      .brakeAlert	{position:absolute; top:5vh;	left:44vw;	width:10vw; padding: 1vh}
+
+      ]]
+
+      }
+
       end
 
       end)
