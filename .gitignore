@@ -10,7 +10,7 @@ tmp
 docs/
 .history/
 screen/
-
+out/development/
 
 build_tobitege.bat
 saga_dubuild.lua

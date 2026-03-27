@@ -4,23 +4,17 @@ A modular flight HUD with autopilot, fuel monitoring, radar, warp tracking, AGG 
 
 ## Installation
 
-SagaHUD requires the main script file plus several external Lua modules that are loaded at runtime.
+SagaHUD requires the main script file plus one external Lua module (the atlas) that is loaded at runtime.
 
-### Step 1: Copy External Lua Files
+### Step 1: Copy the Atlas File
 
-Copy these 5 files to your DU autoconf directory:
+Copy the atlas file to your DU autoconf directory:
 
 ```
-sagatankdata.lua    -->  <DU Install>/Game/data/lua/autoconf/custom/sagatankdata.lua
-sagastaticsvg.lua   -->  <DU Install>/Game/data/lua/autoconf/custom/sagastaticsvg.lua
-sagastaticcss.lua   -->  <DU Install>/Game/data/lua/autoconf/custom/sagastaticcss.lua
-sagamenusystem.lua  -->  <DU Install>/Game/data/lua/autoconf/custom/sagamenusystem.lua
-atlas.lua           -->  <DU Install>/Game/data/lua/autoconf/custom/atlas.lua
+atlas.lua  -->  <DU Install>/Game/data/lua/autoconf/custom/atlas.lua
 ```
 
-The atlas file is located at: `FlightHuds/AtlasFile-main/AtlasFile-main/atlas.lua`
-
-All four `saga*.lua` files are in this directory alongside this INSTALL.md.
+Download the atlas file from: [https://github.com/csdhome/atlas-CG](https://github.com/csdhome/atlas-CG/blob/main/atlas.lua)
 
 ### Step 2: Install the HUD (Choose One Method)
 
@@ -29,7 +23,7 @@ All four `saga*.lua` files are in this directory alongside this INSTALL.md.
 Copy the conf file:
 
 ```
-SagaHud.conf  -->  <DU Install>/Game/data/lua/autoconf/custom/SagaHud.conf
+out/release/Saga.conf  -->  <DU Install>/Game/data/lua/autoconf/custom/SagaHud.conf
 ```
 
 Then in-game:
@@ -60,12 +54,8 @@ C:\ProgramData\Dual Universe\Game\data\lua\autoconf\custom\
 Your autoconf directory should look like this after installation:
 ```
 autoconf/custom/
-  SagaHud.conf
+  SagaHud.conf       (only if using Method A)
   atlas.lua
-  sagatankdata.lua
-  sagastaticsvg.lua
-  sagastaticcss.lua
-  sagamenusystem.lua
 ```
 
 ### Consortium-Specific Features
@@ -78,7 +68,6 @@ autoconf/custom/
 
 ### Troubleshooting
 
-If you see error messages like `[E] sagatankdata not found`:
-- Make sure all four `saga*.lua` files are in `autoconf/custom/`
-- File names are case-sensitive — use the exact names listed above
-- The HUD will still function with default/missing data but fuel readings may be inaccurate
+If you see error messages like `[E] atlas not found`:
+- Make sure `atlas.lua` is in `autoconf/custom/`
+- File names are case-sensitive — use the exact name listed above
