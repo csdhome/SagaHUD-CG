@@ -13,12 +13,12 @@
       "name": "Saga",
       "type": "control",
       "slots": [
-        {
-          "name": "core",
-          "type": "core",
-          "events": []
-        }
-      ]
+  {
+    "name": "core",
+    "type": "core",
+    "events": []
+  }
+]
     }
   ],
   "targets": [
