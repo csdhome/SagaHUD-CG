@@ -21,12 +21,11 @@ end
 function initializeTanks()
 	loadTankData()
 	local tankData = tankData
-	local fuelWeightMod = (((100 - (5 * fuelTankOptimization)) / 100)) - 1
-	local contWeightMod = (((100 - (5 * containerOptimization)) / 100)) - 1
+	local optimFactor = 1 - ((fuelTankOptimization + containerOptimization) * 0.04)
 	fuelWeights = {
-		['atmo'] = (4 - (4 * (math.abs(fuelWeightMod) + math.abs(contWeightMod)))),
-		['space'] = (6 - (6 * (math.abs(fuelWeightMod) + math.abs(contWeightMod)))),
-		['rocket'] = (0.8 - (0.8 * (math.abs(fuelWeightMod) + math.abs(contWeightMod))))
+		['atmo'] = 4 * optimFactor,
+		['space'] = 6 * optimFactor,
+		['rocket'] = 0.8 * optimFactor
 	}
 
 	local curTime = system.getArkTime()
@@ -69,14 +68,17 @@ function initializeTanks()
 			if isInClass(item.id, "AtmoFuelContainer") then
 				elem.tankType = "atmo"
 				elem.maxMass = GetMaxVolume(item.id, item.size) * (1 + (0.2 * atmoTankHandling)) * fuelWeights['atmo'] * GetFuelTankModifier(item.id)
+				elem.percent = elem.maxMass > 0 and round2((elem.mass / elem.maxMass) * 100, 2) or 0
 				table.insert(fuels['atmo'], elem)
 			elseif isInClass(item.id, "RocketFuelContainer") then
 				elem.tankType = "rocket"
 				elem.maxMass = GetMaxVolume(item.id, item.size) * (1 + (0.1 * rocketTankHandling)) * fuelWeights['rocket'] * GetFuelTankModifier(item.id)
+				elem.percent = elem.maxMass > 0 and round2((elem.mass / elem.maxMass) * 100, 2) or 0
 				table.insert(fuels['rocket'], elem)
 			elseif isInClass(item.id, "SpaceFuelContainer") then
 				elem.tankType = "space"
 				elem.maxMass = GetMaxVolume(item.id, item.size) * (1 + (0.2 * spaceTankHandling)) * fuelWeights['space'] * GetFuelTankModifier(item.id)
+				elem.percent = elem.maxMass > 0 and round2((elem.mass / elem.maxMass) * 100, 2) or 0
 				table.insert(fuels['space'], elem)
 			end
 			local ri = 1
