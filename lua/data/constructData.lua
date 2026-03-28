@@ -190,7 +190,7 @@ function getConstructData(construct, core)
 	_cD.isLanded = tonumber(_cD.GrndDist) ~= nil and _cD.GrndDist < 0.5 and _cD.speedKph < 1
 	-- atmoD is a boost factor for low atmo densities,
 	-- e.g. for Thades where it is only 35% or less
-	_cD.atmoD = ternary(_cD.atmoDensity > 0.1, _cD.atmoDensity, 1)
+	_cD.atmoD = ternary(_cD.atmoDensity > 0.01, _cD.atmoDensity, 1)
 
 	-- * other possibly helpful values, that are currently unused:
 	-- _cD.inertia = 1 / math.sqrt(1 - ((v * v) / (c * c)))
@@ -236,6 +236,11 @@ function getBrakes(cD)
 	local brakeforce = cD.maxBrake or 5000000
 	if cD.inAtmo then
 		brakeforce = brakeforce / clamp(cD.constructSpeed/100, 0.1, 1)
+		-- Scale brake estimate by atmospheric density so thin atmo (e.g. Thades)
+		-- produces more conservative (longer) stopping distances
+		if cD.atmoDensity > 0 and cD.atmoDensity < 0.5 then
+			brakeforce = brakeforce * clamp(cD.atmoDensity + 0.5, 0.5, 1)
+		end
 	end
 
 	local c  = 50000 * 2000 / 3600
