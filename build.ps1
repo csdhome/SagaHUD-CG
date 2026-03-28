@@ -6,7 +6,7 @@ $env:LUA_PATH = "$PWD/lua/?.lua;$PWD/util/?.lua;$PWD/lib/?.lua;$PWD/util/du-mock
 $confPath = "$PWD/out/release/Saga.conf"
 $conf = Get-Content -Path $confPath -Raw
 $oldSlots = "slots:`n  core:`n    name: core`n    class: CoreUnit`n    select: null`n    type:`n      events: []`n      methods: []"
-$newSlots = "slots:`n  core:`n    class: CoreUnit`n  databank:`n    class: databank`n    select: manual`n  radar:`n    class: RadarPVPUnit`n    select: manual`n  radar2:`n    class: RadarPVPUnit`n    select: manual`n  warpdrive:`n    class: WarpDriveUnit`n    select: manual`n  antigrav:`n    class: AntiGravityGeneratorUnit`n    select: manual`n  shield:`n    class: ShieldGeneratorUnit`n    select: manual`n  telemeter:`n    class: TelemeterUnit`n    select: manual"
+$newSlots = "slots:`n  core:`n    class: CoreUnit`n  databank:`n    class: databank`n    select: manual`n  radar:`n    class: RadarPVPUnit`n    select: all`n  warpdrive:`n    class: WarpDriveUnit`n  antigrav:`n    class: AntiGravityGeneratorUnit`n  shield:`n    class: ShieldGeneratorUnit`n  telemeter:`n    class: TelemeterUnit"
 $conf = $conf -replace [regex]::Escape($oldSlots), $newSlots
 Set-Content -Path $confPath -Value $conf -Encoding UTF8
 
