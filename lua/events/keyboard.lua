@@ -305,6 +305,9 @@ function onLandingGearDown() -- Landing gear v
 		return
 	end
 
+	-- Don't engage landing mode in deep space (allow on airless moons/asteroids)
+	if not cData.nearPlanet then return end
+
 	-- Finally, turn on landing mode and remember coming from Standard mode
 	if not gC.maneuverMode then
 		ship.resetManeuver()

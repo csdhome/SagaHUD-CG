@@ -71,7 +71,14 @@ function onUnitStart()
 		ship.apply(cD)
 	else
 		setThrottle()
-		Nav.axisCommandManager:setTargetGroundAltitude(0)
+		if cD.isLanded then
+			Nav.axisCommandManager:setTargetGroundAltitude(0)
+		elseif cD.nearPlanet and not (links.antigrav and links.antigrav.isActive()) then
+			navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
+			navCom:activateGroundEngineAltitudeStabilization()
+		else
+			Nav.axisCommandManager:setTargetGroundAltitude(0)
+		end
 		Nav:update()
 	end
 	if cD.isLanded then
