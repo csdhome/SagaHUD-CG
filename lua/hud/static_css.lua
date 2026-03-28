@@ -88,9 +88,9 @@ path.menuLegendKey {fill:hsl(0,0%,95%)}
 
 .atmoAlert	{position:absolute; top:74vh;	right:62.9vw;	width:10vw; padding:0.2vh; border:0.2vh;
 	font-size: 1vh;color: ivory; text-shadow:0.2vh 0.2vh 1vh black;}
-.apAlert	{position:absolute; top:25vh;	left:72vw;	width:10vw; padding: 1vh;
+.apAlert	{position:absolute; top:76vh;	left:44vw;	width:10vw; padding: 1vh;
 	border:0.2vh; border-style: solid; border-color: orangered}
-.brakeAlert	{position:absolute; top:5vh;	left:44vw;	width:10vw; padding: 1vh}
+.brakeAlert	{position:absolute; top:73vh;	left:44vw;	width:10vw; padding: 1vh}
 ]]
 }
 end
