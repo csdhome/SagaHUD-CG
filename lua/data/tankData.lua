@@ -21,7 +21,7 @@ end
 function initializeTanks()
 	loadTankData()
 	local tankData = tankData
-	local optimFactor = 1 - ((fuelTankOptimization + containerOptimization) * 0.04)
+	local optimFactor = 1 - ((fuelTankOptimization + containerOptimization) * 0.05)
 	fuelWeights = {
 		['atmo'] = 4 * optimFactor,
 		['space'] = 6 * optimFactor,

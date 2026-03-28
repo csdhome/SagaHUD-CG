@@ -23,9 +23,18 @@ function Widgets.fuelInfo:build()
 
                 local timeStr = ''
                 if tank.timeLeft and tank.timeLeft > 0 then
-                    local mins = math.floor(tank.timeLeft / 60)
-                    local secs = math.floor(tank.timeLeft % 60)
-                    timeStr = ' (' .. mins .. 'm ' .. secs .. 's)'
+                    local t = tank.timeLeft
+                    local days = math.floor(t / 86400)
+                    local hours = math.floor((t % 86400) / 3600)
+                    local mins = math.floor((t % 3600) / 60)
+                    if days > 0 then
+                        timeStr = ' (' .. days .. 'd ' .. hours .. 'h ' .. mins .. 'm)'
+                    elseif hours > 0 then
+                        timeStr = ' (' .. hours .. 'h ' .. mins .. 'm)'
+                    else
+                        local secs = math.floor(t % 60)
+                        timeStr = ' (' .. mins .. 'm ' .. secs .. 's)'
+                    end
                 end
 
                 local label = fuelType:upper() .. ' ' .. i .. ' ~' .. pct .. '%' .. timeStr
