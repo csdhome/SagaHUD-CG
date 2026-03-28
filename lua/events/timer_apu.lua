@@ -409,7 +409,7 @@ function onTimerAPU()
 			elseif gCache.aggAP and aggData.aggBubble then
 				gCache.spaceBrakeTrigger = false
 				gCache.apMode = 'agg'
-			elseif (not cData.inAtmo and (cData.brakes.distance*1.5 >= projDist) and ((curAltitude < gCache.targetOrbitAlt+5000 and sameBody) or reEntryTrigger or (sameBody and gCache.inOrbit))) and not gCache.aggAP and body.hasAtmosphere and ap.targetLoc == 'surface' then --TODO do a check for if moon/asteroid or space points later and have different reaction since you cant reenter.
+			elseif (not cData.inAtmo and (cData.brakes.distance*1.5 >= projDist) and ((curAltitude < gCache.targetOrbitAlt+5000 and sameBody) or reEntryTrigger or (sameBody and gCache.inOrbit) or (targetBody.atmoAltitude and planetDist and planetDist < targetBody.atmoAltitude*0.5))) and not gCache.aggAP and body.hasAtmosphere and ap.targetLoc == 'surface' then --TODO do a check for if moon/asteroid or space points later and have different reaction since you cant reenter.
 				gCache.orbitLock = false
 				gCache.apMode = 'reEntry'
 			elseif ((behindPlanet and sameBody and curAltitude < gCache.targetOrbitAlt+2000) or (behindPlanet and not sameBody) or gCache.orbitLock) or (sameBody and curAltitude < gCache.targetOrbitAlt+2000 and not targetBody.hasAtmosphere)and not gCache.aggAP and gCache.spaceCapable then
@@ -558,7 +558,7 @@ function onTimerAPU()
 
 			if not gCache.spaceBrakeTrigger then
 
-				if cData.speedKph < ap.maxSpaceSpeed and aligned or cData.speedKph < 3000 then
+				if (cData.speedKph < ap.maxSpaceSpeed and aligned) or (cData.speedKph < 3000 and aligned) then
 					SpdControl = '8'
 					navCom:setThrottleCommand(axisLong, getThrottle(ap.maxSpaceSpeed))
 				elseif cData.speedKph < ap.maxSpaceSpeed then
@@ -572,9 +572,9 @@ function onTimerAPU()
 					SpdControl = '8.2'
 					navCom:setThrottleCommand(axisLong, clamp((getSpaceVelocityTargetAngle()*0.1)-0.01,0,1))
 				end
-				if cData.atmoDensity > 0.05 then
+				if cData.atmoDensity > 0.05 and aligned then
 					SpdControl = '8.3'
-					navCom:setThrottleCommand(axisLong, getThrottle())
+					navCom:setThrottleCommand(axisLong, getThrottle(math.min(cData.burnSpeedKph-150, ap.maxSpaceSpeed)))
 				end
 			else
 				if ap.targetLoc == 'surface' then
@@ -596,25 +596,20 @@ function onTimerAPU()
 						end
 					end
 				else
-					if not gCache.spaceBrakeTrigger then
-						SpdControl = '9.4'
+					SpdControl = '9.5'
+					if getSpaceVelocityTargetAngle() > 10 then
 						navCom:setThrottleCommand(axisLong, getThrottle(ap.maxSpaceSpeed))
+						brakeCtrl = 12.1
+						inputs.brake = 1
 					else
-						SpdControl = '9.5'
-						if getSpaceVelocityTargetAngle() > 10 then
-							navCom:setThrottleCommand(axisLong, getThrottle(ap.maxSpaceSpeed))
-							brakeCtrl = 12.1
-							inputs.brake = 1
-						else
-							navCom:setThrottleCommand(axisLong, getThrottle(100,cData.forwardSpeed))
-						end
+						navCom:setThrottleCommand(axisLong, getThrottle(100,cData.forwardSpeed))
 					end
 				end
 			end
 		end
 
 		if (ap.targetLoc == 'surface' and cData.brakes.distance*1.4 >= planetDist and not sameBody)
-			and cData.speedKph * 1000 then --TODO if target is on planet, or if mmon or space target. etc.
+			and cData.speedKph > 1000 then --TODO if target is on planet, or if mmon or space target. etc.
 			gCache.spaceBrakeTrigger = true
 			brakeCtrl = 11.5
 			inputs.brake = 1
@@ -654,13 +649,13 @@ function onTimerAPU()
 		end
 
 		if gCache.apMode == 'reEntry' then
-			if getTargetWorldAngle() > 1 then
+			if getTargetWorldAngle() > 5 then
 				if cData.zSpeedKPH < -200 then
 					SpdControl = '12'
-				navCom:setThrottleCommand(axisLong, getThrottle(1000,cData.forwardSpeed))
+					navCom:setThrottleCommand(axisLong, getThrottle(1000,cData.forwardSpeed))
 				else
 					SpdControl = '13'
-				navCom:setThrottleCommand(axisLong, getThrottle())
+					navCom:setThrottleCommand(axisLong, getThrottle(math.min(cData.burnSpeedKph-300, 1000)))
 				end
 				if cData.speedKph >= cData.burnSpeedKph-300 then
 					brakeCtrl = 15
@@ -686,7 +681,7 @@ function onTimerAPU()
 		if (gCache.apMode == 'reEntry' or (sameBody and curAltitude < gCache.targetOrbitAlt + 2000)) and ap.targetLoc ~= 'space' then
 			if gCache.brakeTrigger then
 				gCache.orbitLock = false
-				if projDist > 1000 then
+				if projDist > 1000 and cData.inAtmo and gCache.apMode ~= 'reEntry' then
 					gCache.brakeTrigger = false
 				end
 				gCache.apMode = 'Landing'
