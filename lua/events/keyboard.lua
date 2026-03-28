@@ -314,7 +314,9 @@ function onLandingGearDown() -- Landing gear v
 	ap.landingMode = false
 	-- ap:toggleLandingMode(true)
 	ship.prepLanding()
+	if gC.maneuverMode then
 	setThrottle(1,1,1)
+	end
 end
 
 function onUpArrowDown() -- Up Arrow v
