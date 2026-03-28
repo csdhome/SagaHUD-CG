@@ -148,6 +148,7 @@ function HUD.update()
 	--	rendered = rendered .. HUD.renderButtons()
 	--end
 
+	rendered = rendered .. HUD.renderAttitudeIndicator()
 	system.setScreen(rendered)
 end
 
@@ -206,3 +207,4 @@ require('static_svg')
 --require('buttons') ---@TODO testing for mouse interactions; CSS is kaputt
 require('static_css')
 require('dynamic_svg')
+require('attitudeIndicator')
