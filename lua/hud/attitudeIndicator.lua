@@ -22,11 +22,11 @@ function HUD.renderAttitudeIndicator()
     end
 
     -- Layout constants (all in vw/vh units)
-    local CX  = 53      -- horizontal center (vw) - offset right to clear altitude bar
+    local CX  = 50      -- horizontal center (vw) - offset right to clear altitude bar
     local CY  = 50      -- vertical center (vh)
     local LH  = 42      -- ladder height (vh)
     local LW  = 7       -- ladder width (vw)
-    local GAP = 16      -- gap between ladders (vw)
+    local GAP = 14      -- gap between ladders (vw)
     local PPD = LH / 36 -- pixels (vh) per degree
     local LXL = CX - GAP/2 - LW  -- left ladder left edge
     local LXR = CX + GAP/2       -- right ladder left edge
@@ -81,11 +81,11 @@ function HUD.renderAttitudeIndicator()
 
     -- Pitch readout (left of left ladder)
     local pSign = pitchDeg >= 0 and '+' or ''
-    out[#out+1] = '<div style="' .. st .. 'left:' .. (LXL-4.5) .. 'vw;top:' .. (CY-1) .. 'vh;font-size:1.6vh;font-weight:bold;font-family:monospace;color:' .. c(0.92) .. '">' .. pSign .. tostring(pitchDeg) .. '°</div>'
+    out[#out+1] = '<div style="' .. st .. 'left:' .. (LXL-4.5) .. 'vw;top:' .. (CY-1) .. 'vh;font-size:1.6vh;font-weight:bold;font-family:monospace;color:' .. c(0.92) .. '">' .. pSign .. tostring(pitchDeg) .. '&#176;</div>'
 
     -- Roll readout (below center)
     local rSign = rollDeg >= 0 and '+' or ''
-    out[#out+1] = '<div style="' .. st .. 'left:' .. (CX-3.5) .. 'vw;top:' .. (BOT+0.8) .. 'vh;font-size:1.6vh;font-weight:bold;font-family:monospace;color:' .. c(0.92) .. '">R ' .. rSign .. tostring(rollDeg) .. '°</div>'
+    out[#out+1] = '<div style="' .. st .. 'left:' .. (CX-3.5) .. 'vw;top:' .. (BOT+0.8) .. 'vh;font-size:1.6vh;font-weight:bold;font-family:monospace;color:' .. c(0.92) .. '">R ' .. rSign .. tostring(rollDeg) .. '&#176;</div>'
 
     return table.concat(out)
 end

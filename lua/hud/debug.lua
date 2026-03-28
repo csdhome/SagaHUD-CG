@@ -51,7 +51,7 @@ function HUD.constructDebug()
 	end
 	html[#html+1] = [[<div class="atmoAlert">Brake Dist = ]]..
 		colorSpan(bColor,printDistance(bD2, true))..planetStr..eDiv
-	html[#html+1] = [[<div class="atmoAlert" style="transform:translate(36.2vw,0vh);text-align:right;">Vertical Speed: ]]..
+	html[#html+1] = [[<div class="atmoAlert" style="transform:translate(30vw,0vh);text-align:right;">Vertical Speed: ]]..
 		(rnd(cD.zSpeedKPH,1))..eDiv
 
 	if ap.enabled and not gC.maneuverMode then

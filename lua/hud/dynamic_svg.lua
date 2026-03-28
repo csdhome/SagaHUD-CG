@@ -87,7 +87,7 @@ function dynamicSVG()
 </svg>]],
 		altitudeBar = [[
 <svg viewBox="-39 -24 100 240">
-<rect width="5" height="200" style="fill: rgb(255, 255, 255); fill-opacity: 0; paint-order: stroke; stroke: rgb(94, 94, 94);" transform="matrix(-1, 0, 0, -1, 0, 0)" x="-15" y="-200" bx:origin="0 0"/>
+<rect width="5" height="200" style="fill: rgb(255, 255, 255); fill-opacity: 0; paint-order: stroke; stroke: rgb(94, 94, 94);" transform="matrix(-1, 0, 0, -1, 0, 0)" x="-5" y="-200" bx:origin="0 0"/>
 <rect width="5" height="]]..altFill..[[" style="stroke: rgb(0,0,0); stroke-opacity: 0; fill: rgb(150, 150, 150);" transform="matrix(-1, 0, 0, -1, 0, 0)" x="-5" y="-200" bx:origin="0 0"/>
 <text style="white-space: pre; fill: #eee; font-family:]]..fnt..[[, sans-serif;
 	font-size:12px; paint-order: fill; stroke: #b80000; stroke-width: 3px; text-anchor: middle;"
