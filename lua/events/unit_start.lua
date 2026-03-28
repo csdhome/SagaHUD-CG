@@ -82,7 +82,7 @@ function onUnitStart()
 end
 
 function printHello()
-	P'SagaHUD v4.1.8-CG'
+	P'SagaHUD v4.1.10-CG'
 end
 
 function initEngines()
