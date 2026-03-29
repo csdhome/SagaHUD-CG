@@ -354,6 +354,9 @@ function onLandingGearDown() -- Landing gear v
 	-- Finally, turn on landing mode
 	if not cData.inAtmo and not gC.maneuverMode then
 		-- Airless body in standard mode: land via ground stabilization
+		setThrottle() -- Zero all throttle/engine commands to prevent rockets firing
+		inputs.brake = 1
+		inputs.brakeLock = false
 		unit.deployLandingGears()
 		navCom:activateGroundEngineAltitudeStabilization()
 		gC.airlessTargetAlt = 0

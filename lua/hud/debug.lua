@@ -3,7 +3,6 @@ function HUD.constructDebug()
 	--local warpData = warpData
 	local gC, rnd, cD, ap = globals, round2, cData, AutoPilot
 	local bDist = cD.brakes.distance
-	local cPitch = rnd(cD.rpy.pitch)
 	-- local textSize = 1
 
 	updateTanksCo()
@@ -79,51 +78,16 @@ function HUD.constructDebug()
 	---@TODO "heavy" message?
 	--if 0.5 * cData.MaxKinematics.Forward / cData.G < cData.mass then msg("WARNING: Heavy Loads may affect autopilot performance.") end
 
-	local collisionStatus = false
-	if gC and type(gC.collision) == 'table' then
-		local bDist2 = rnd(bDist*1.2)
-		local vSpeed = cD.zSpeedKPH
+	-- Collision avoidance: velocity-based emergency braking
+	local collisionStatus = Collision.checkEmergencyBraking()
 
-		if gC.collision and gC.collision.hasAtmosphere then
-			local atmoColDist2 = rnd(vector.dist(cD.body.center,cD.position)-(gC.collision.atmoRadius))
-			if bDist2 > atmoColDist2 and atmoColDist2 > 0 and vSpeed < 0 and cD.constructSpeed > cD.burnSpeed then
-				collisionStatus = true
-			end
-		else
-			local moonColDist = rnd(vector.dist(cD.body.center,cD.position)-(gC.collision.radius*1.1))
-			if bDist2 > moonColDist and moonColDist > 0 and vSpeed < 0 then
-				collisionStatus = true
-			end
-		end
-		if collisionStatus then
-			html[#html+1] = getDiv("collision", "Collision Alert: "..tostring(gC.collision.name or "(unknown)"))
-		end
-		--Atmo throttle overspeed protection
-		--this was apparently missing the check for atmo!
-		if ap.userConfig.throttleBurnProtection and not gC.orbitalHold
-			and not ap.enabled and not ap.landingMode and cData.inAtmo then
-			if collisionStatus then
-				gC.safetyThrottle = true
-				if controlMode() == 'cruise' then
-					swapControl()
-				end
-				if cPitch < 5 then
-					navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
-				end
-			end
-			if gC.safetyThrottle and collisionStatus then
-				gC.collisionBrake = true
-				brakeCtrl = 30
-				inputs.brake = 1
-			end
-		end
+	-- Show collision alert for velocity-based detection
+	if collisionStatus and gC.collision then
+		html[#html+1] = getDiv("collision", "Collision Alert: "..tostring(gC.collision.name or "(unknown)"))
 	end
-	if not collisionStatus and gC.collisionBrake then
-		brakeCtrl = 31
-		gC.collisionBrake = false
-		if not gC.brakeState then
-			inputs.brake = 0
-		end
+	-- Show collision alert for path-based detection (AP orbit avoidance)
+	if gC.collisionBody and not collisionStatus then
+		html[#html+1] = getDiv("collision", "Avoiding: "..tostring(gC.collisionBody.name or "(unknown)"))
 	end
 	html[#html+1] = '<style>' .. HUD.staticCSS.css .. '></style>'
 

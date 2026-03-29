@@ -393,6 +393,12 @@ function onTimerAPU()
 			end
 		end
 
+		-- Collision avoidance: check for bodies blocking the path
+		local pathBlocked = Collision.needsOrbitAvoidance()
+		if pathBlocked and not behindPlanet then
+			behindPlanet = true -- treat path-blocked same as behind-planet for orbit entry
+		end
+
 		if (math.abs(cData.forwardSpeed) + math.abs(cData.lateralSpeed)) < 3 then
 			gCache.horizontalStopped = true
 		else

@@ -22,6 +22,7 @@ function()
 		landSpeedHigh = maxLandingSpeedHigh,
 		landSpeedLow = maxLandingSpeedLow,
 		travelAlt = travelAlt,
+		maxVBrakeSpeed = maxVBrakeSpeed,
 		base = nil
 	}
 
@@ -46,6 +47,7 @@ function()
 		Config.defaults[configDatabankMap.landSpeedHigh] = this.userConfig.landSpeedHigh
 		Config.defaults[configDatabankMap.landSpeedLow] = this.userConfig.landSpeedLow
 		Config.defaults[configDatabankMap.travelAlt] = this.userConfig.travelAlt
+		Config.defaults[configDatabankMap.maxVBrakeSpeed] = this.userConfig.maxVBrakeSpeed
 
 		EventSystem:register('ConfigDBChanged', this.applyConfig, this)
 		this:applyConfig()
@@ -74,6 +76,7 @@ function()
 		this.userConfig.landSpeedHigh = Config:getValue(configDatabankMap.landSpeedHigh)
 		this.userConfig.landSpeedLow = Config:getValue(configDatabankMap.landSpeedLow)
 		this.userConfig.travelAlt = Config:getValue(configDatabankMap.travelAlt)
+		this.userConfig.maxVBrakeSpeed = Config:getValue(configDatabankMap.maxVBrakeSpeed)
 		this:setHoverHeight(this.userConfig.hoverHeight)
 		this:updateMaxSpaceSpeed()
 	end
@@ -104,8 +107,10 @@ function()
 		if this.enabled then
 			this:toggleLandingMode(false)
 			this:updateMaxSpaceSpeed()
+			SoundManager:play('autopilotEnabled')
 		else
 			resetModes()
+			SoundManager:play('autopilotDisabled')
 		end
 		Config:setDynamicValue(configDatabankMap.apState, this.enabled)
 	end
@@ -172,9 +177,11 @@ function()
 				this.currentPointIndex = this.currentPointIndex + 1
 				this:setActiveRoute(this.currentRouteIndex, this.currentPointIndex)
 			end
+			SoundManager:play('waypointReached')
 			resetAP()
 			return
 		end -- Next point doesn't exist
+		SoundManager:play('destinationReached')
 		this:toggleState(false)
 		this:toggleLandingMode(true)
 	end

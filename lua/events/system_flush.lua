@@ -31,6 +31,8 @@ function onSystemFlush()
                 ship.takeoff = false
                 inputs.brake = 0
                 inputs.brakeLock = false
+                -- Zero throttle to prevent residual engine commands from firing rockets
+                setThrottle()
                 P('[I] Takeoff complete')
             end
         elseif (ship.landingMode or AutoPilot.landingMode) and not globals.maneuverMode then

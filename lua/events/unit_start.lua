@@ -40,6 +40,8 @@ function onUnitStart()
 	RouteDatabase:init(links.databanks, 'SagaRoutes', 'SagaActiveRoutes')
 	Radar:init(links.radars)
 	AutoPilot:init()
+	SoundManager:init()
+	SoundManager:play('startup')
 
 	initializeTanks()
 	initEngines()

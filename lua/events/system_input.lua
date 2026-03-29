@@ -21,6 +21,9 @@
 	/orbitAlt					-- Set TargetOrbitAlt							/orbitAlt 10000
 	/agg						-- Toggle AGG on/off							/agg
 	/aggAlt						-- Set AGG altitude								/aggAlt 5000
+	/aggauto					-- Toggle auto AGG altitude adjustment			/aggauto
+	/maxvbrakespeed				-- Set max vertical brake speed (km/h)			/maxvbrakespeed 300
+	/sound						-- Toggle sound effects on/off					/sound
 
 	HELPERS
 	/agl						-- Set above ground level in meters				/agl 1.2
@@ -273,6 +276,24 @@ function onInput(text)
 	if action == '/atp' then
 		ap:toggleThrottleBurnProtection()
 		P('Auto throttle burn protection '..ternary(ap.userConfig.throttleBurnProtection,'enabled','disabled'))
+	end
+
+	if action == '/maxvbrakespeed' then
+		if num2 == nil then
+			P('Max VBrake Speed = '..(ap.userConfig.maxVBrakeSpeed or maxVBrakeSpeed or 300)..' km/h')
+		else
+			setConfigValue(action, num2, false, 300, 10, 1000, cfMap.maxVBrakeSpeed, "maxVBrakeSpeed", "Max VBrake Speed set to %d km/h")
+		end
+	end
+
+	if action == '/aggauto' then
+		ap.userConfig.autoAGGAdjust = not ap.userConfig.autoAGGAdjust
+		Config:setValue(cfMap.autoAGGAdjust, ap.userConfig.autoAGGAdjust)
+		P('Auto AGG Adjust '..ternary(ap.userConfig.autoAGGAdjust,'enabled','disabled'))
+	end
+
+	if action == '/sound' or action == '/sounds' then
+		SoundManager:toggle()
 	end
 
 	if action == '/orbitalt' then
