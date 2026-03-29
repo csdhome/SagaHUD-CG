@@ -37,5 +37,7 @@ configDatabankMap = {
 	-- Maneuver mode: default travel altitude for AP targets
 	travelAlt = 'tra',
 	-- Base target location
-	base = 'bas'
+	base = 'bas',
+	-- Max vertical brake speed (km/h)
+	maxVBrakeSpeed = 'vbs'
 }

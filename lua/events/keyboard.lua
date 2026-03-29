@@ -174,20 +174,6 @@ function onAlt7()
 	end
 end
 
--- OLD: AR mode toggle
--- function onAlt7()
--- 	local gC = globals
--- 	if gC.arMode == 'none' then
--- 		gC.arMode = 'planets'
--- 	elseif gC.arMode == 'planets' then
--- 		gC.arMode = 'moons'
--- 	elseif gC.arMode == 'moons' then
--- 		gC.arMode = 'both'
--- 	else
--- 		gC.arMode = 'none'
--- 	end
--- end
-
 function onAlt8()
 	local gC, ap = globals, AutoPilot
 	if inputs.shift then
@@ -354,6 +340,9 @@ function onLandingGearDown() -- Landing gear v
 	-- Finally, turn on landing mode
 	if not cData.inAtmo and not gC.maneuverMode then
 		-- Airless body in standard mode: land via ground stabilization
+		setThrottle() -- Zero all throttle/engine commands to prevent rockets firing
+		inputs.brake = 1
+		inputs.brakeLock = false
 		unit.deployLandingGears()
 		navCom:activateGroundEngineAltitudeStabilization()
 		gC.airlessTargetAlt = 0

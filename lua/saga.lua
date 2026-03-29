@@ -88,6 +88,8 @@ dockWidget = true --export: Show docking widget (toggle with /dock command)
 maxLandingSpeedHigh = 200 --export Maneuver mode: Max landing speed above 1 km altitude. Default: 200
 maxLandingSpeedLow = 100 --export Maneuver mode: Max landing speed below 1 km altitude. Default: 100
 travelAlt = 900 --export Maneuver mode: default travel altitude for AP targets. Default: 900
+maxVBrakeSpeed = 300 --export: (km/h) Maximum vertical brake speed outside final bubble. Default: 300
+autoAGGAdjust = false --export: When AGG active, AP auto-controls AGG altitude
 DEBUG = false -- only for development!
 customAtlas = "atlas" --export: (Default "atlas") Custom atlas file to override NQ atlas (file need to be located in autoconf/custom/)
 
@@ -105,7 +107,9 @@ globals = {
 	cameraAim = false,
 	collision = nil,
 	collisionAlert = false,
+	collisionBody = nil,
 	collisionBrake = false,
+	collisionDist = 0,
 	dbgTxt = '', -- debug output
 	debug = DEBUG, -- debug widget toggle (if included)
 	farSide = nil,
@@ -176,10 +180,54 @@ Nav = Navigator.new(system, links.core, unit)
 ---@class AxisCommandManager
 navCom = Nav.axisCommandManager
 
+-- Bridge: expose DU API and script globals to _G so external require'd
+-- files can access them. DU injects unit/system/etc via metatable on _ENV,
+-- so pairs(_ENV) won't find them - must copy explicitly.
+-- DU API globals (injected, not enumerable)
+_G.unit = unit; _G.system = system; _G.construct = construct
+_G.player = player; _G.library = library
+-- Script globals defined above (links set AFTER data/links redefines it below)
+_G.P = P; _G.Nav = Nav; _G.navCom = navCom
+_G.globals = globals; _G.cData = cData
+_G.Axis = Axis; _G.inputs = inputs; _G.atlas = atlas; _G.systemId = systemId
+_G.configDatabankMap = configDatabankMap
+-- Math/util shortcuts from libmain
+_G.abs = abs; _G.atan = atan; _G.rad = rad; _G.floor = floor
+_G.format = format; _G.sub = sub; _G.acos = acos; _G.sqrt = sqrt
+_G.cos = cos; _G.sin = sin; _G.deg = deg; _G.ceil = ceil
+_G.max = max; _G.clamp = clamp; _G.sign = sign; _G.round = round
+_G.round2 = round2; _G.vec3 = vec3; _G.constants = constants; _G.utils = utils
+_G.pid = pid
+-- Export params needed by external modules at load time
+_G.agl = agl; _G.autoAGGAdjust = autoAGGAdjust; _G.dockingMode = dockingMode
+_G.dockWidget = dockWidget; _G.hoverHeight = hoverHeight; _G.maxPitch = maxPitch
+_G.maxRoll = maxRoll; _G.maxSpaceSpeed = maxSpaceSpeed; _G.shieldManage = shieldManage
+_G.spaceCapableOverride = spaceCapableOverride
+_G.throttleBurnProtection = throttleBurnProtection; _G.wingStallAngle = wingStallAngle
+_G.maxLandingSpeedHigh = maxLandingSpeedHigh; _G.maxLandingSpeedLow = maxLandingSpeedLow
+_G.travelAlt = travelAlt; _G.maxVBrakeSpeed = maxVBrakeSpeed
+_G.aimStrength = aimStrength; _G.boostModeOverride = boostModeOverride
+_G.pitchSpeedFactor = pitchSpeedFactor; _G.yawSpeedFactor = yawSpeedFactor
+_G.rollSpeedFactor = rollSpeedFactor; _G.brakeSpeedFactor = brakeSpeedFactor
+_G.brakeFlatFactor = brakeFlatFactor; _G.autoRoll = autoRoll
+_G.autoRollFactor = autoRollFactor; _G.turnAssist = turnAssist
+_G.turnAssistFactor = turnAssistFactor; _G.torqueFactor = torqueFactor
+_G.atmoTankHandling = atmoTankHandling; _G.spaceTankHandling = spaceTankHandling
+_G.rocketTankHandling = rocketTankHandling; _G.fuelTankOptimization = fuelTankOptimization
+_G.containerOptimization = containerOptimization
+-- DU types
+_G.axisCommandId = axisCommandId; _G.axisCommandType = axisCommandType
+
 -- this will load most source parts
 -- require('data/remap')
 require('data/links')
+-- links.lua reassigns the links variable, so update _G AFTER it loads
+_G.links = links
 require('libmain')
+-- Sync back: external modules set globals in _G, pull them into handler env
+for k, v in pairs(_G) do
+    if rawget(_ENV, k) == nil and type(k) == 'string' then rawset(_ENV, k, v) end
+end
 kinematics = Kinematics()
 
 printHello()
@@ -195,6 +243,7 @@ unit:onEvent('onStop', function ()
 	if links.electronics ~= nil then links.electronics:SwitchesOff() end
 end)
 unit:onEvent('onTimer', function (unit, id)
+	syncToG()
 	if id == "SYSUPDATE" then
 		dynamicSVG()
 		if not globals.maneuverMode then onTimerAPU() end

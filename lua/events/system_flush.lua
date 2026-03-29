@@ -1,8 +1,12 @@
-airlessDbgTimer = 0
+function syncToG()
+    _G.cData = cData; _G.links = links; _G.globals = globals
+    _G.inputs = inputs; _G.ship = ship; _G.brakeCtrl = brakeCtrl
+    _G.sameBody = sameBody; _G.targetAngularVelocity = targetAngularVelocity
+end
 function onSystemFlush()
-	if links.core == nil or construct == nil then return end
+	if not links or links.core == nil or construct == nil then return end
 	cData = getConstructData(construct, links.core)
-	--globals.dbgTxt = '' -- only for development!
+	syncToG()
     if globals.maneuverMode then
         ship.apply(cData)
     else
@@ -10,19 +14,6 @@ function onSystemFlush()
     end
     -- Airless body: navCom ground stabilization handles vertical boosters
     if not cData.inAtmo and cData.nearPlanet then
-        -- Debug: log state every 3 seconds (not every frame)
-        airlessDbgTimer = airlessDbgTimer + system.getActionUpdateDeltaTime()
-        if airlessDbgTimer > 3 then
-            airlessDbgTimer = 0
-            local tgt = Nav.axisCommandManager:getTargetGroundAltitude() or -1
-            P('[DBG] mode='..(globals.maneuverMode and 'M' or 'S')
-                ..' takeoff='..(ship.takeoff and 'Y' or 'N')
-                ..' land='..(ship.landingMode and 'Y' or 'N')
-                ..' GD='..(cData.GrndDist and round2(cData.GrndDist,1) or 'nil')
-                ..' tgtAlt='..round2(tgt,1)
-                ..' spd='..round2(cData.speedKph,1))
-        end
-
         if ship.takeoff then
             -- Takeoff: complete when clearly off the ground
             local airborne = (cData.GrndDist and cData.GrndDist > 5) or
@@ -31,6 +22,8 @@ function onSystemFlush()
                 ship.takeoff = false
                 inputs.brake = 0
                 inputs.brakeLock = false
+                -- Zero throttle to prevent residual engine commands from firing rockets
+                setThrottle()
                 P('[I] Takeoff complete')
             end
         elseif (ship.landingMode or AutoPilot.landingMode) and not globals.maneuverMode then

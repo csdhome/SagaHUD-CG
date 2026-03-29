@@ -3,27 +3,6 @@ radarWidgetTemplate = {
 	anchor = anchorENUM.bottom,
 	width = 280
 }
---[[
-Widgets.radarAbandoned = Widget:new{ class = radarWidgetTemplate.class, anchor = radarWidgetTemplate.anchor, width = radarWidgetTemplate.width }
-function Widgets.radarAbandoned:build()
-	return buildContactList(self, 'Abandoned', ContactTypeENUM.abandoned)
-end
-
-Widgets.radarStatic = Widget:new{ class = radarWidgetTemplate.class, anchor = radarWidgetTemplate.anchor, width = radarWidgetTemplate.width }
-function Widgets.radarStatic:build()
-	return buildContactList(self, 'Static', ContactTypeENUM.static)
-end
-
-Widgets.radarDynamic = Widget:new{ class = radarWidgetTemplate.class, anchor = radarWidgetTemplate.anchor, width = radarWidgetTemplate.width }
-function Widgets.radarDynamic:build()
-	return buildContactList(self, 'Dynamic', ContactTypeENUM.dynamic)
-end
-
-Widgets.radarTest = Widget:new{ class = radarWidgetTemplate.class, anchor = radarWidgetTemplate.anchor, width = radarWidgetTemplate.width }
-function Widgets.radarTest:build()
-	return buildContactListTest(self, 'Test', Radar.radarTestList)
-end
-]]
 local function getWidget()
     return Widget:new{ class = radarWidgetTemplate.class, anchor = radarWidgetTemplate.anchor, width = radarWidgetTemplate.width }
 end
