@@ -7,5 +7,9 @@ function onSystemFlush()
     else
 	    applyShipInputs()
     end
+    -- On airless bodies, never allow ground engine stabilization
+    if not cData.inAtmo then
+        navCom:deactivateGroundEngineAltitudeStabilization()
+    end
     shipLandingTask(cData)
 end

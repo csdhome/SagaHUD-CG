@@ -71,19 +71,18 @@ function onUnitStart()
 		ship.apply(cD)
 	else
 		setThrottle()
-		if cD.isLanded then
-			Nav.axisCommandManager:setTargetGroundAltitude(0)
-		elseif cD.nearPlanet and not (links.antigrav and links.antigrav.isActive()) then
-			navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
-			navCom:activateGroundEngineAltitudeStabilization()
-		else
-			Nav.axisCommandManager:setTargetGroundAltitude(0)
+		Nav.axisCommandManager:setTargetGroundAltitude(0)
+		if not cD.inAtmo then
+			navCom:deactivateGroundEngineAltitudeStabilization()
 		end
 		Nav:update()
 	end
-	if cD.isLanded then
+	local onSurface = cD.isLanded or
+		(cD.nearPlanet and cD.speedKph < 1 and cD.GrndDist and cD.GrndDist < 5)
+	if onSurface then
 		inputs.brake = 1
 		inputs.brakeLock = true
+		AutoPilot.landingMode = true
 	end
 	gC.startup = false
 end

@@ -270,17 +270,20 @@ function onLandingGearDown() -- Landing gear v
 
 	inputs.brake = 0
 	inputs.brakeLock = false
-	-- When already landed, do a liftoff to hover height in active mode
-	if cData.isLanded then
+	-- When already landed or in landing mode near ground, do a liftoff to hover height
+	local onSurface = cData.isLanded or
+		(cData.nearPlanet and cData.speedKph < 1 and cData.GrndDist and cData.GrndDist < 5)
+	if onSurface or (ap.landingMode and not gC.maneuverMode) then
 		ship.landingMode = false
-		-- Liftoff in either mode
-		if not gC.maneuverMode then
+		ap.landingMode = false
+		if not gC.maneuverMode and cData.inAtmo then
+			-- Atmosphere: use ground engine hover
 			return ap:toggleLandingMode(false)
 		end
-		moveVert(ap.userConfig.hoverHeight)
-		ship.takeoff = true
-		ship.travel = false
-		ship.vertical = false
+		-- Airless body: simple takeoff - release brakes and let player fly
+		navCom:deactivateGroundEngineAltitudeStabilization()
+		setThrottle()
+		unit.retractLandingGears()
 		return
 	end
 
@@ -297,7 +300,11 @@ function onLandingGearDown() -- Landing gear v
 		end
 		if not gC.maneuverMode then
 			setThrottle()
-			navCom:activateGroundEngineAltitudeStabilization()
+			if cData.inAtmo then
+				navCom:activateGroundEngineAltitudeStabilization()
+			else
+				navCom:deactivateGroundEngineAltitudeStabilization()
+			end
 			if not gC.startup then
 				ap:toggleLandingMode(false)
 			end
@@ -308,16 +315,21 @@ function onLandingGearDown() -- Landing gear v
 	-- Don't engage landing mode in deep space (allow on airless moons/asteroids)
 	if not cData.nearPlanet then return end
 
-	-- Finally, turn on landing mode and remember coming from Standard mode
-	if not gC.maneuverMode then
-		ship.resetManeuver()
-		gC.prevStdMode = true
+	-- Finally, turn on landing mode
+	if gC.maneuverMode or not cData.inAtmo then
+		-- Maneuver mode or airless body: use STEC landing with rocket/booster control
+		if not gC.maneuverMode then
+			ship.resetManeuver()
+			gC.prevStdMode = true
+		end
+		ship.landingMode = true
+		ap.landingMode = false
+		ship.prepLanding()
+		setThrottle(1,1,1)
+	else
+		-- Standard mode in atmosphere: use navCom ground engine landing
+		ap:toggleLandingMode(true)
 	end
-	ship.landingMode = true
-	ap.landingMode = false
-	-- ap:toggleLandingMode(true)
-	ship.prepLanding()
-	setThrottle(1,1,1)
 end
 
 function onUpArrowDown() -- Up Arrow v
@@ -518,6 +530,8 @@ function onGroundAltitudeDownDown(loop) -- Altitude Down v
 		if s.holdAltitude > 109 then
 			s.holdAltitude = RoundAlt(s.holdAltitude, ternary(loop, -5, -10))
 		end
+	elseif not gC.maneuverMode and not cData.inAtmo and cData.nearPlanet then
+		navCom:updateCommandFromActionStart(axisCommandId.vertical, -1.0)
 	else
 		AutoPilot:addHoverHeight(-0.25, loop)
 	end
@@ -527,6 +541,8 @@ function onGroundAltitudeUpDown(loop) -- Altitude Up v
 	local gC, s = globals, ship
 	if gC.maneuverMode and gC.altitudeHold then
 		s.holdAltitude = RoundAlt(s.holdAltitude, ternary(loop, 5, 10))
+	elseif not gC.maneuverMode and not cData.inAtmo and cData.nearPlanet then
+		navCom:updateCommandFromActionStart(axisCommandId.vertical, 1.0)
 	else
 		AutoPilot:addHoverHeight(0.25, loop)
 	end

@@ -125,7 +125,12 @@
     unit.setAxisCommandValue = unit['setAxisCommandValue']
 
     AxisCommandManager = _G['AxisCommandManager']
-    AxisCommandManager.activateGroundEngineAltitudeStabilization = AxisCommandManager['activateGroundEngineAltitudeStabilization']
+    local _origActivateGES = AxisCommandManager['activateGroundEngineAltitudeStabilization']
+    AxisCommandManager.activateGroundEngineAltitudeStabilization = function(self)
+        if cData and cData.inAtmo then
+            _origActivateGES(self)
+        end
+    end
     AxisCommandManager.deactivateGroundEngineAltitudeStabilization = AxisCommandManager['deactivateGroundEngineAltitudeStabilization']
     AxisCommandManager.updateTargetGroundAltitudeFromActionStart = AxisCommandManager['updateTargetGroundAltitudeFromActionStart']
     AxisCommandManager.updateTargetGroundAltitudeFromActionLoop = AxisCommandManager['updateTargetGroundAltitudeFromActionLoop']

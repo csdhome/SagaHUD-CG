@@ -260,8 +260,8 @@ function STEC()
 			return tmp,atmp
 		end
 		if not self.state then
-			P'[E] State not set!'
-			return tmp, atmp
+			self.gotoLock = nil
+			return tmpOrg, atmpOrg
 		end
 
 		-- Initial target processing
@@ -339,9 +339,12 @@ function STEC()
 			self.targetDist = abs(targetDirection:len() - targetRadius)
 
 			-- target is already the temp waypoint, check for bailout
-			if (self.targetDist <= targetRadius) or (abs(altDiff) <= 0.1) or
+			local nearGround = cD.GrndDist and cD.GrndDist <= 0.5
+			if (self.targetDist <= targetRadius) or
+				(self.state == 'LANDING' and nearGround) or
+				(self.state ~= 'LANDING' and abs(altDiff) <= 0.1) or
 				((self.takeoff or self.vertical) and self.targetDist <= 0.1) or
-				(self.landingMode and self.GrndDist and self.GrndDist <= 0.2)
+				(self.landingMode and nearGround)
 			 then
 				if self.vertical or self.takeoff then
 					self.resetMoving()
