@@ -192,16 +192,20 @@ function onAlt9()
 	gC.maneuverMode = not gC.maneuverMode
 	Config:setValue(configDatabankMap.maneuverMode, gC.maneuverMode)
 	if gC.maneuverMode then return end
-	setThrottle()
-	navCom:resetCommand(axisCommandId.vertical)
-	-- On airless bodies, activate ground stabilization (boosters need it)
+	-- Switching OUT of maneuver: activate ground stabilization FIRST to prevent
+	-- vertical control gap that causes the ship to sink during transition
 	if not cData.inAtmo and cData.nearPlanet then
 		navCom:activateGroundEngineAltitudeStabilization()
 		gC.airlessTargetAlt = cData.GrndDist or 10
 		Nav.axisCommandManager:setTargetGroundAltitude(gC.airlessTargetAlt)
+	elseif cData.inAtmo then
+		navCom:activateGroundEngineAltitudeStabilization()
+		navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
 	else
 		navCom:deactivateGroundEngineAltitudeStabilization()
 	end
+	setThrottle()
+	navCom:resetCommand(axisCommandId.vertical)
 end
 
 function onWarpDown() -- Warp drive v
@@ -251,6 +255,7 @@ end
 
 function onLandingGearDown() -- Landing gear v
 	local gC, ap = globals, AutoPilot
+	_landingCompleted = false
 
 	-- Reset some states
 	if ap.enabled then ap:toggleState(false) end
@@ -268,9 +273,12 @@ function onLandingGearDown() -- Landing gear v
 	-- If takeoff is active, pressing G cancels it and parks
 	if ship.takeoff then
 		ship.resetMoving()
+		setThrottle()
 		unit.deployLandingGears()
 		inputs.brake = 1
 		inputs.brakeLock = true
+		inputs.up = false
+		inputs.down = false
 		return
 	end
 
@@ -350,11 +358,13 @@ function onLandingGearDown() -- Landing gear v
 		ship.landingMode = true
 		ap.landingMode = false
 	elseif gC.maneuverMode then
-		-- Maneuver mode: use STEC landing
+		-- Maneuver mode: same as standard - kill engines, gravity lands the ship
 		ship.landingMode = true
-		ap.landingMode = false
+		ap.landingMode = true
 		ship.prepLanding()
-		setThrottle(1,1,1)
+		setThrottle()
+		navCom:deactivateGroundEngineAltitudeStabilization()
+		navCom:resetCommand(axisCommandId.vertical)
 	else
 		-- Standard mode in atmosphere: use navCom ground engine landing
 		ap:toggleLandingMode(true)
@@ -409,7 +419,10 @@ function onDownArrowDown() -- Down Arrow v
 		inputs.md = true
 	else
 		inputs.down = true
-		if not gC.maneuverMode and not (cData.isLanded and cData.inAtmo) then
+		if gC.maneuverMode then
+			inputs.brakeLock = false
+			inputs.brake = 0
+		elseif not (cData.isLanded and cData.inAtmo) then
 			if not cData.inAtmo and cData.nearPlanet then
 				-- Airless body: lower ground stabilization target
 				gC.airlessTargetAlt = math.max(2, (gC.airlessTargetAlt or 25) - 10)
@@ -467,6 +480,7 @@ function onLeftArrowDown() -- Strafe Left Arrow v
 	if HUD.Config.mainMenuVisible then inputs.ml = true return end
 	inputs.direction.x = -1
 	inputs.left = true
+	if globals.maneuverMode then inputs.brakeLock = false; inputs.brake = 0 end
 	if isForStdMode() then axLat(true,-1) end
 	globals.lateralState = true
 end
@@ -479,6 +493,7 @@ end
 
 function onRightArrowDown() -- Strafe Right Arrow v
 	resetLeftRight()
+	if globals.maneuverMode then inputs.brakeLock = false; inputs.brake = 0 end
 	if HUD.Config.mainMenuVisible then inputs.mr = true return end
 	inputs.direction.x = 1
 	inputs.right = true
@@ -494,6 +509,10 @@ end
 
 function onForwardDown() -- Forward v
 	inputs.pitch = inputs.pitch - 1
+	if globals.maneuverMode then
+		inputs.brakeLock = false
+		inputs.brake = 0
+	end
 	if not globals.maneuverMode or not inputs.alt then return end
 	local currentTime = system.getUtcTime()
 	forwardClick = forwardClick or 0
@@ -514,6 +533,10 @@ end
 
 function onBackwardDown() -- Backward v
 	inputs.pitch = inputs.pitch + 1
+	if globals.maneuverMode then
+		inputs.brakeLock = false
+		inputs.brake = 0
+	end
 end
 
 function onBackwardUp() -- Backward ^
@@ -541,6 +564,10 @@ function onYawLeftDown()
 		ship.rotationSpeed = ship.rotationSpeedMin
 	end
 	inputs.yaw = 1
+	if globals.maneuverMode then
+		inputs.brakeLock = false
+		inputs.brake = 0
+	end
 end
 
 function onYawLeftUp()
@@ -556,6 +583,10 @@ function onYawRightDown()
 		ship.rotationSpeed = ship.rotationSpeedMin
 	end
 	inputs.yaw = -1
+	if globals.maneuverMode then
+		inputs.brakeLock = false
+		inputs.brake = 0
+	end
 end
 
 function onYawRightUp()
