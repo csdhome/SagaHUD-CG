@@ -63,7 +63,7 @@ atmoTankHandling = 5 --export: (Atmospheric Fuel Tank Handling) 0-5
 spaceTankHandling = 5 --export: (Space Fuel Tank Handling) 0-5
 -- Skill level of person who deployed tanks, or highest talents applied to construct
 -- with reapply Talents.
-rocketTankHandling = 0 --export: (Rocket Fuel Tank Handling) 0-5
+rocketTankHandling = 5 --export: (Rocket Fuel Tank Handling) 0-5
 -- Skill level of person who deployed tanks, or highest talents applied to construct
 -- with reapply Talents.
 fuelTankOptimization = 5 --export: Talents Fuel Tank Optimization: 0-5
