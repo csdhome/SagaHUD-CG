@@ -60,6 +60,12 @@ function onUnitStart()
 	-- Main class for Maneuver mode highly customized by @tobitege
 	-- Based on Horizon v1.19x flight script by the ShadowTemplar org.
 	ship = STEC()
+	-- Sync all critical globals to _G after everything is initialized
+	syncToG()
+	_G.AutoPilot = AutoPilot; _G.Config = Config; _G.HUD = HUD
+	_G.RouteDatabase = RouteDatabase; _G.Electronics = Electronics
+	_G.Radar = Radar; _G.SoundManager = SoundManager
+	_G.fuels = fuels; _G.kinematics = kinematics
 
 	if unit.isRemoteControlled() then
 		player.freeze(true)

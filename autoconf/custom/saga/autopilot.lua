@@ -252,7 +252,7 @@ function()
 			gC.altitudeHold = false
 			gC.orbitalHold = false
 			gC.rotationDampening = true
-			inputs.brake = 1
+			inputs.brake = 0
 			inputs.brakeLock = false
 			unit.deployLandingGears()
 			if not gC.maneuverMode then
@@ -261,7 +261,12 @@ function()
 				end
 				navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
 				navCom:setTargetSpeedCommand(axisCommandId.longitudinal,0)
-				navCom:setTargetGroundAltitude(-1)
+				-- Kill vertical thrust and let gravity bring the ship down.
+				-- Brakes are off so ship won't float.
+				if cData.inAtmo then
+					navCom:deactivateGroundEngineAltitudeStabilization()
+					navCom:resetCommand(axisCommandId.vertical)
+				end
 				-- Airless bodies: activate ground stabilization for vertical boosters
 				if not cData.inAtmo and cData.nearPlanet then
 					navCom:activateGroundEngineAltitudeStabilization()

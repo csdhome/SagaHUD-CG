@@ -476,13 +476,16 @@ function STEC()
 			tmp = tmp + (sign(inputs.direction.x) * cD.wRight * ternary(inputs.direction.x, cD.MaxKinematics.Right, cD.MaxKinematics.Left))
 		end
 
-		-- * Forward
+		-- * Forward / Backward
+		-- In maneuver mode, always apply full thrust when keys are pressed
+		-- (no dependency on mouse wheel throttle)
 		if not self.alternateCM then
-			if (self.mmbThrottle ) or inputs.pitch < 0 then
-				local t = ternary(self.mmbThrottle, 100, self.throttle)
-				tmp = tmp + (t * cD.wFwd * cD.MaxKinematics.Forward)
+			if inputs.pitch < 0 then
+				tmp = tmp + (cD.wFwd * cD.MaxKinematics.Forward)
 			elseif inputs.pitch > 0 then
-				tmp = tmp - (self.throttle * cD.wFwd * cD.MaxKinematics.Backward)
+				tmp = tmp - (cD.wFwd * cD.MaxKinematics.Backward)
+			elseif self.mmbThrottle then
+				tmp = tmp + (100 * cD.wFwd * cD.MaxKinematics.Forward)
 			end
 		end
 
@@ -601,33 +604,30 @@ function STEC()
 		end
 
 		-- * Inertial Dampening
+		-- When no movement key is held, bring the ship to a dead stop on that axis.
 		if self.inertialDampening and not isStartup and not landed then
 			-- Important: do NOT use world velocity here, like cD.wVel!
 			local delta, locV = vec3(), cD.velocity
 			local chg = false
-			-- dampen X-axis (lateral)
+			-- dampen X-axis (lateral): stop when not strafing
 			if not (inputs.left or inputs.right) then
 				delta.x = locV.x
 				chg = true
 			end
 
-			-- dampen Y-axis (longitudinal)
+			-- dampen Y-axis (longitudinal): stop when not moving forward/back
 			if not (braking or inputs.forward or inputs.backward) then
-				-- we dampen to prevent burn speed
-				-- OR rotational dampening is OFF and no user input
 				if (cD.inAtmo and cD.ySpeedKPH > (cD.burnSpeedKph - 50)) then
-					delta.y = locV.y * 2
-				elseif (gC.rotationDampening and inputs.pitch == 0
-						and not (self.mmbThrottle or self.alternateCM or self.state == "TRAVERSING")) then
-					delta.y = locV.y
+					delta.y = locV.y * 2 -- extra dampening near burn speed
+				elseif inputs.pitch == 0
+						and not (self.mmbThrottle or self.alternateCM or self.state == "TRAVERSING") then
+					delta.y = locV.y -- always dampen when no forward/back input
 				end
 				chg = true
 			end
 
-			-- dampen Z-axis (vertical)
-			-- do not dampen if miniPilot is active (gotoLock) or user input
+			-- dampen Z-axis (vertical): stop when not moving up/down
 			if not (self.gotoLock or inputs.up or inputs.down) then
-				---@TODO this is a bit messy, in space trying to counter some down movement
 				if not cD.inAtmo and not self.vertical and cD.gravVert > 9.9
 					and cD.GrndDist and cD.GrndDist >= 0 and cD.GrndDist < 10 then
 					delta.z = (locV.z * 1.5)
@@ -643,10 +643,10 @@ function STEC()
 				tmp = tmp - (delta * cD.gravVert * mass)
 			end
 		end
-		-- Counter gravity: on airless bodies, always compensate (no ground stabilization available)
-		-- On planets with atmosphere, skip when landed (ground engines handle it)
-		if not (isStartup or self.landingMode or inputs.down) and
-			not (landed and cD.inAtmo) then
+		-- Counter gravity: compensate for gravity so the ship hovers.
+		-- Skip when landed in atmo (ground engines handle it),
+		-- or when landing mode is active (let gravity bring the ship down).
+		if not (landed and cD.inAtmo) and not self.landingMode then
 			tmp = tmp - (cD.gravity * mass)
 		end
 		tmp = tmp / mass
@@ -670,7 +670,7 @@ function STEC()
 		local p2tag = self.priorityTags2
 		if not self.landingMode and cD.GrndDist and (cD.hasvBoosters or cD.hasHovers)
 			and (gC.boostMode == 'all' or gC.boostMode == 'hybrid')
-			and cD.GrndDist > 0 and cD.GrndDist < cD.maxHoverDist
+			and cD.GrndDist > 0 and cD.maxHoverDist and cD.GrndDist < cD.maxHoverDist
 			and cD.inAtmo then
 			p1tag = "brake,airfoil,torque,ground,lateral,longitudinal"
 			p2tag = ""
@@ -736,12 +736,8 @@ function shipLandingTask(cD)
 	local dist = cD.altitude
 	-- If a body is close then don't use plain 0 but an estimate
 	if cD.body then
-		local surfAvg = tonumber(cD.body.surfaceAverageAltitude)
-		-- do NOT use surfaceMinAltitude!!!
 		if cD.body.name == 'Thades' then
 			dist = dist - 13700
-		-- elseif cD.altitude > surfAvg then
-		-- 	dist = dist - surfAvg
 		end
 	end
 	-- Try to land into AGG altitude if AGG present and active
@@ -752,8 +748,6 @@ function shipLandingTask(cD)
 			dist = cD.altitude - a
 		end
 	end
-
-	---@TODO how treat fishy distances??
 	-- If fishy, try 1km
 	if dist < 0 and cD.altitude == 0 then dist = 1000 end
 	-- Always use detected ground distance (if <= 100m)
