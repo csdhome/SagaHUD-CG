@@ -174,20 +174,6 @@ function onAlt7()
 	end
 end
 
--- OLD: AR mode toggle
--- function onAlt7()
--- 	local gC = globals
--- 	if gC.arMode == 'none' then
--- 		gC.arMode = 'planets'
--- 	elseif gC.arMode == 'planets' then
--- 		gC.arMode = 'moons'
--- 	elseif gC.arMode == 'moons' then
--- 		gC.arMode = 'both'
--- 	else
--- 		gC.arMode = 'none'
--- 	end
--- end
-
 function onAlt8()
 	local gC, ap = globals, AutoPilot
 	if inputs.shift then

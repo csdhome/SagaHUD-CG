@@ -1,4 +1,5 @@
 function onTimerFuelUpdate()
+    if not links or not links.core then return end
     local curTime = system.getArkTime()
     for _, list in pairs(fuels) do
         for _, tank in ipairs(list) do

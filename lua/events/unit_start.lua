@@ -21,17 +21,23 @@ function onUnitStart()
 	system.showHelper(false)
 
 	scanLinks()
+	_G.links = links -- sync after scanLinks populates links.core
 	if links.core == nil then
 		P"[E] Core not found, did you link it to this control unit?"
 		unit.exit()
 		return false
 	end
+	-- Recreate Navigator with actual core reference (saga.lua creates it with nil core)
+	Nav = Navigator.new(system, links.core, unit)
+	navCom = Nav.axisCommandManager
+	_G.Nav = Nav; _G.navCom = navCom
 	init()
 	-- remapAfterInit()
 	finaliseLinks()
 	validateParms()
 
 	cData = getConstructData(construct, links.core)
+	syncToG()
 	playerData = getPlayerData()
 	aggData = getAggData()
 	warpData = getWarpData()

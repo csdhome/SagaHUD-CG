@@ -1,6 +1,4 @@
 function HUD.constructDebug()
-	--local tankData = tankData
-	--local warpData = warpData
 	local gC, rnd, cD, ap = globals, round2, cData, AutoPilot
 	local bDist = cD.brakes.distance
 	-- local textSize = 1
@@ -17,21 +15,6 @@ function HUD.constructDebug()
 	local html = {}
 	html[#html+1] = getTDiv("speedBar", 50, 50, HUD.dynamicSVG.speedBar)
 	html[#html+1] = getTDiv("throttleBar", 50, 50, HUD.dynamicSVG.throttleBar)
-
-	-- velocity indicators (by Jeronimo)
--- 	if velocityVector then
--- 		local sizeX, sizeY, cAV = 1600, 1000, cD.wVelAbs:normalize()
--- 		local cAVx, cAVz = cAV.x, cAV.z
--- 		local velStrokeColor = oRed
--- 		local Az = deg(atan(cD.xSpeedKPH, cD.ySpeedKPH)) -- drift rot angle in deg
--- 		local Ax = deg(atan(cD.zSpeedKPH, cD.ySpeedKPH)) -- drift pitch angle in deg
--- 		if cD.velMag < 1 then cAVx, cAVz = 0,0 else if abs(Ax) > 45 or abs(Az) > 45 then velStrokeColor = "red" end end
--- 		local ds = 'style="filter: drop-shadow(1px 1px 0px black) drop-shadow(0px 0px 3px black);"'
--- 		local SVGvelocity = [[<circle cx="]].. 800+cAVx*305 ..[[" cy="]].. 450+cAVz*-305 ..[[" r="10" stroke-width="1.5" stroke="]]..velStrokeColor..[[" fill="none"/>
--- <line x1="800" y1="450" x2="]].. 800+cAVx*300 ..[[" y2= "]].. 450+cAVz*-300 ..[[" stroke-width="1" fill="none" stroke="]]..velStrokeColor..[["/>]]
--- 		local SVGfinal = '<div><svg viewBox="0 0 '.. sizeX ..' '.. sizeY ..'" '..ds..'>'..SVGvelocity.. '</svg></div>'
--- 		html[#html+1] = SVGfinal
--- 	end
 
 	local bD2, planetStr = rnd(cD.brakes.distance*1.1,1), ''
 	if cD.body then
@@ -113,34 +96,11 @@ function HUD.constructDebug()
 	local reticle4 = getReticle(-predict)
 	local point4 = library.getPointOnScreen(reticle4) --ManeuverNode - predicted motion
 
-	-- if gC.arMode ~= "none" then
-	-- 	for _,planet in pairs(atlas[systemId]) do
-	-- 		if cD.body.name ~= planet.name or (cD.body.name ~= planet.name and vector.dist(cD.body.center, cD.position) > 100000) then
-	-- 			local planetTrgt = library.getPointOnScreen(getXYZ(planet.center))
-	-- 			local scale = clamp(rnd((vector.dist(planet.center,cD.position))/200000),10,500)
-	-- 			local scaleMap = (math.abs(utils.map(scale, 10, 500, 0.3, 2) - 2.4))
-	-- 			local planetType = HUD.staticSVG.planetsIcon
-	-- 			local plan = [[<div class="planets" style="transform:translate(]]
-	-- 			if planet.type == 'Planet' and (gC.arMode == 'planets' or gC.arMode == 'both') then
-	-- 				planetType = HUD.staticSVG.planetsIcon
-	-- 				html[#html+1] = plan..(planetTrgt[1]*100)..[[vw,]]..(planetTrgt[2]*100)..[[vh) scale(]]..scaleMap..[[)">]]..planetType..eDiv
-	-- 				html[#html+1] = [[<div class="ptext" style="transform:translate(]]..(planetTrgt[1]*100)..[[vw,]]..(planetTrgt[2]*100)..[[vh); font-size: 1vhx; text-shadow: 4px 4px 5px maroon;">]]..tostring(planet.name)..eDiv
-	-- 			elseif planet.type == 'Moon' and (gC.arMode == 'moons' or gC.arMode == 'both') then
-	-- 				planetType = HUD.staticSVG.moonsIcon
-	-- 				html[#html+1] = plan..(planetTrgt[1]*100)..[[vw,]]..(planetTrgt[2]*100)..[[vh) scale(]]..scaleMap..[[)">]]..planetType..eDiv
-	-- 				html[#html+1] = [[<div class="mtext" style="transform:translate(]]..(planetTrgt[1]*100)..[[vw,]]..(planetTrgt[2]*100)..[[vh); font-size: 1vh; text-shadow: 4px 4px 5px midnightblue;">]]..tostring(planet.name)..eDiv
-	-- 			end
-	-- 		end
-	-- 	end
-	-- end
 	if point1[1] <= 1 and point1[2] <= 1 then
---	<div class="crosshair" style="position:absolute;left:]]..(point1[1]*100)..[[%;top:]]..(point1[2]*100)..[[%;margin-top:0em;margin-left:0em;">
-		local crosshair = [[
-	<div class="crosshair" style="position:absolute;left:]]..(point1[1]*98)..[[%;top:]]..(point1[2]*101)..[[%;margin-top:0em;margin-left:0em;">
-	<svg style="width:2vw;height:2vh;" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-	<path d="M23.6465 37.8683L24.0001 38.2218L24.3536 37.8683L26.3536 35.8684L26.5 35.7219V35.5148V26.5H35.5148H35.7219L35.8684 26.3536L37.8684 24.3536L38.2219 24L37.8684 23.6465L35.8684 21.6465L35.7219 21.5H35.5148H26.5V12.4852V12.2781L26.3536 12.1317L24.3536 10.1317L24.0001 9.77818L23.6465 10.1317L21.6465 12.1318L21.5 12.2782V12.4854V21.5H12.4854H12.2782L12.1318 21.6465L10.1318 23.6465L9.77824 24L10.1318 24.3536L12.1318 26.3536L12.2782 26.5H12.4854H21.5V35.5147V35.7218L21.6465 35.8682L23.6465 37.8683Z" fill="#00dd00" stroke="#333333"/>
-	</svg></div>]]
-		html[#html+1] = crosshair
+		local tpl = _hudTpl and _hudTpl.crosshair
+		if tpl then
+			html[#html+1] = string.format(tpl, point1[1]*98, point1[2]*101)
+		end
 	end
 
 	if targetPoint ~= nil then
@@ -150,8 +110,6 @@ function HUD.constructDebug()
 	html[#html+1] = getTDivP("dot", point2, HUD.staticSVG.centerofMass)
 	html[#html+1] = getTDivP("dot", point3, HUD.staticSVG.progradeReticle)
 	html[#html+1] = getTDivP("dot", point4, HUD.staticSVG.retrogradeReticle)
-	-- local szBorder = getSafeZoneBorder()
-	-- html[#html+1] = getTDivP("dot", szBorder.arBorder, HUD.staticSVG.skull..printDistance(szBorder.borderDist, true))
 
 	return table.concat(html)
 end

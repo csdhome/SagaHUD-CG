@@ -1,10 +1,11 @@
 function onSystemUpdate()
-	if links.core == nil or construct == nil then return end
+	if not links or links.core == nil or construct == nil then return end
 	cData = getConstructData(construct, links.core)
 	playerData = getPlayerData()
 	aggData = getAggData()
 	warpData = getWarpData()
 	scrnData = {}
+	syncToG()
 
 	-- Axis	Description				Dir
 	-- Axis0	Roll				+

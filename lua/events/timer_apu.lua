@@ -8,25 +8,8 @@ function onTimerAPU()
 	local cData = cData
 
 	gCache.collision, gCache.farSide, gCache.nearSide = castIntersections()
-	--gCache.collisionAlert = false
 	local curAltitude = cData.altitude
 	local curTargAlt = ap.targetAltitude
-
-	-- if gCache.collision ~= nil then
-	-- 	if gCache.collision.bodyId ~= targetBody.bodyId then
-	-- 		if gCache.collision.hasAtmosphere then
-	-- 			local atmoColDist = vector.dist(gCache.collision.center,cData.position)-(gCache.collision.atmoRadius*1.05)
-	-- 			if cData.brakes.distance*1.4 >= atmoColDist and getAltitude() > gCache.collision.atmoAltitude*1.05 then
-	-- 				gCache.collisionAlert = true
-	-- 			end
-	-- 		else
-	-- 			local moonColDist = vector.dist(gCache.collision.center,cData.position)-(gCache.collision.radius*1.5)
-	-- 			if cData.brakes.distance*1.4 >= moonColDist and getAltitude() > gCache.collision.radius*1.2 then
-	-- 				gCache.collisionAlert = true
-	-- 			end
-	-- 		end
-	-- 	end
-	-- end
 
 	if gCache.followMode then
 		local shipDist = vector.dist(cData.position,playerData.playerPosition)
@@ -108,8 +91,6 @@ function onTimerAPU()
 		local csr = shld.getResistances() --CurrentShieldResistances
 		local rcd = shld.getResistancesCooldown() --ResistanceCooldown
 		local shp = shld.getShieldHitpoints() --shield hitpoints
-		--local mshp = shld.getMaxShieldHitpoints()
-		--local sHealth = ((shp/mshp)*100)
 
 		if shld.getStressHitpointsRaw() == 0 then
 			srp = srp / 4
@@ -147,14 +128,7 @@ function onTimerAPU()
 	end
 
 	gCache.aggAP = false
-	---@TODO review AGG target altitude change
-	-- if links.antigrav ~= nil then
-	-- 	if aggData.aggState and ap.userConfig.autoAGG == true and ap.targetLoc == 'surface' then
-	-- 		gCache.aggAP = true
-	-- 	end
-	-- end
 
-	--TODO customizable max speed / or burnSpeed
 	if ap.enabled or gCache.altitudeHold then
 		altHold()
 	end
@@ -205,13 +179,6 @@ function onTimerAPU()
 					apoUp = true
 				end
 			end
-			-- if peri < gCache.targetOrbitAlt-100 and periUp == true then
-			-- 	navCom:setThrottleCommand(axisLong, 1)
-			-- else
-			-- 	periUp = false
-			-- 	navCom:setThrottleCommand(axisLong, 0)
-			-- end
-
 			if (apo < gCache.targetOrbitAlt-100 and apoUp == true) or (peri < gCache.targetOrbitAlt-100 and periUp == true) then
 				SpdControl = '2'
 				navCom:setThrottleCommand(axisLong, 0.1)
@@ -277,11 +244,6 @@ function onTimerAPU()
 			SpdControl = '4'
 			navCom:setThrottleCommand(axisLong, getThrottle())
 		else
-			--if curAltitude > gCache.targetOrbitAlt+500 and orbitAltT < 0 then
-			--   if controlMode() == 'travel' then
-			--	   swapControl()
-			--   end
-			--	navCom:setTargetSpeedCommand(axisLong, orbitSpeed*3.6)
 			if orbitAltT > gCache.targetOrbitAlt-100 and curAltitude < gCache.targetOrbitAlt-5 then
 				SpdControl = '5'
 				navCom:setThrottleCommand(axisLong, 0)
@@ -292,13 +254,7 @@ function onTimerAPU()
 				else
 					navCom:setThrottleCommand(axisLong, 0.1)
 				end
-			--elseif orbitAltT > (gCache.targetOrbitAlt-400) then
-				-- if controlMode() == 'travel' then
-				--	swapControl()
-				--end
-				-- navCom:setTargetSpeedCommand(axisLong, (orbitSpd))
 			else
-				-- navCom:setTargetSpeedCommand(axisLong, (orbitSpd))
 				SpdControl = '7'
 				navCom:setThrottleCommand(axisLong, getThrottle(orbitSpd))
 			end
@@ -322,15 +278,6 @@ function onTimerAPU()
 		local projDist = projectedDistance(ap.target)
 		gCache.safetyThrottle = false
 		setTargetOrbitAlt()
-		--[[if gCache.waitForBubble then
-			if controlMode() == 'travel' then
-				swapControl()
-			end
-		elseif SpdControl ~= '9.4' then
-			if controlMode() == 'cruise' then
-				swapControl()
-			end
-		end]]
 		local behindPlanet = false
 		if not ap.targetIsLastPoint then
 			if ap.targetLoc == 'space' then
@@ -367,10 +314,6 @@ function onTimerAPU()
 			end
 			sameBody = body.bodyId == targetBody.bodyId
 		end
-		--if gCache.aggAP then
-		--	links.antigrav.setTargetAltitude((targetBody.atmoRadius - targetBody.radius)+1000)
-		--end
-
 		if not gCache.spaceCapable then
 			if not sameBody or curTargAlt > (targetBody.atmoRadius - targetBody.radius) then
 				P('point on other planet, ship currently set to not space capable.')
@@ -428,23 +371,6 @@ function onTimerAPU()
 
 		if links.antigrav ~= nil and ap.userConfig.autoAGGAdjust then
 			if aggData.aggState and ap.targetLoc == 'surface' then
-				--[[if body.name ~= targetBody.name and inAtmo and inBubble then
-					if aggData.aggTarget ~= body.atmoAltitude+1000 then
-						inks.antigrav.setTargetAltitude( body.atmoAltitude+1000 )
-					end
-				end]]
-				--[[if body.name ~= targetBody.name and inAtmo and not inBubble then
-					if curAltitude <= 1000 then
-						if aggData.aggTarget ~= 1000 then
-							links.antigrav.setTargetAltitude( 1000 )
-						end
-					elseif curAltitude > 1000 then
-						if aggData.aggTarget ~= curAltitude then
-						links.antigrav.setTargetAltitude( curAltitude )
-						end
-					end
-				end]]
-				--if body.name ~= targetBody.name then
 				if targetBody ~= nil then
 					if targetBody.hasAtmosphere and not aggData.aggBubble or not sameBody then
 						if aggData.aggTarget ~= targetBody.atmoAltitude then
@@ -473,23 +399,11 @@ function onTimerAPU()
 			end
 			local wTargetAngle = getTargetWorldAngle()
 			local orbitSpd = cData.orbitFocus.orbitSpeed*3.6
-			--local aggDist = ((vector.dist(targetBody.center,cData.position) - targetBody.radius) - aggData.aggAltitude)
-			--if aggData.aggBubble and math.abs(cData.zSpeedKPH) > 25 then
-			-- 	brakeCtrl = 5
-			-- 	inputs.brake = 1
-			-- end
-			-- SpdControl = 'agg waiting'
 			if wTargetAngle >= 0.5 and wTargetAngle < 5 and aligned then
-				--gCache.spaceBrakeTrigger = false
 				SpdControl = 'agg 1'
 				navCom:setThrottleCommand(axisLong, getThrottle(300))
-				--if cData.speedKph > 320 then
-				--  brakeCtrl = 6
-				--	inputs.brake = 1
-				--end
 			end
 			if wTargetAngle >= 5 and aligned then
-				--gCache.spaceBrakeTrigger = false
 				SpdControl = 'agg 2'
 				navCom:setThrottleCommand(axisLong, getThrottle(orbitSpd))
 			end
@@ -621,7 +535,6 @@ function onTimerAPU()
 			inputs.brake = 1
 		end
 
-		--if gCache.apMode == 'Orbit' and sameBody or gCache.apMode == 'reEntry' or gCache.apMode == 'Atmo Travel' then
 		if (sameBody and cData.inAtmo and gCache.apMode ~= 'Orbit' and gCache.apMode ~= 'Landing' and ap.targetLoc ~= 'space' ) or gCache.apMode == 'reEntry' then
 			if (projDist < 5000 and not gCache.brakeTrigger) then
 				SpdControl = '10'
@@ -767,24 +680,6 @@ function onTimerAPU()
 			navCom:deactivateGroundEngineAltitudeStabilization()
 		end
 	end
-
-	---@TODO does this need a check for e.g. "not waterState"?
--- 	if ap.landingMode then
--- P('ap.landingMode '..tostring(curAltitude))
--- 		navCom:setTargetSpeedCommand(axisLong, 0)
--- 		navCom:setThrottleCommand(axisLong, 0)
--- 		if cData.zSpeedKPH < -15 then
--- 			navCom:setTargetGroundAltitude(curAltitude)
--- 			navCom:activateGroundEngineAltitudeStabilization()
--- 			navCom:resetCommand(axisVert)
--- 			navCom:updateCommandFromActionStart(axisVert, 1.0)
--- 		else
--- 			navCom:resetCommand(axisVert)
--- 			navCom:deactivateGroundEngineAltitudeStabilization()
--- 			navCom:setTargetGroundAltitude(0)
--- 		end
--- 		inputs.brake = 1
--- 	end
 
 	if inputs.brakeLock then
 		inputs.brake = 1

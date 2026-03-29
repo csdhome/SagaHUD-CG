@@ -23,11 +23,17 @@ if (Test-Path "$PWD\atlas.lua") {
     Write-Host "Deployed: atlas.lua"
 }
 
-# Copy tankdata if present
-$tankSrc = "$PWD\autoconf\custom\saga\tankdata.lua"
-if (Test-Path $tankSrc) {
-    Copy-Item -Path $tankSrc -Destination "$sagaDir\tankdata.lua" -Force
-    Write-Host "Deployed: saga/tankdata.lua"
+# Copy all saga runtime modules from autoconf/custom/saga/
+$sagaSrc = "$PWD\autoconf\custom\saga"
+if (Test-Path $sagaSrc) {
+    $files = Get-ChildItem -Path $sagaSrc -Filter "*.lua"
+    foreach ($file in $files) {
+        Copy-Item -Path $file.FullName -Destination "$sagaDir\$($file.Name)" -Force
+        Write-Host "Deployed: saga/$($file.Name)"
+    }
+    Write-Host "Deployed $($files.Count) saga module(s)"
+} else {
+    Write-Warning "saga source directory not found: $sagaSrc"
 }
 
 Write-Host "`nDeploy complete to: $duCustom"
