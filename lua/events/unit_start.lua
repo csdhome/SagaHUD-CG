@@ -66,7 +66,24 @@ function onUnitStart()
 		P"[W] Low lift for Maneuver mode."
 	end
 	gC.maneuverMode = Config:getValue(configDatabankMap.maneuverMode)
-	if gC.maneuverMode then
+	local onSurface = cD.isLanded or
+		(cD.nearPlanet and cD.speedKph < 1 and cD.GrndDist and cD.GrndDist < 5)
+	if not cD.inAtmo and cD.nearPlanet then
+		-- Airless body: use standard mode with ground stabilization
+		if gC.maneuverMode then
+			gC.maneuverMode = false
+		end
+		setThrottle()
+		if onSurface then
+			navCom:deactivateGroundEngineAltitudeStabilization()
+		else
+			-- At altitude: activate stabilization to prevent falling
+			navCom:activateGroundEngineAltitudeStabilization()
+			local alt = cD.GrndDist or 10
+			Nav.axisCommandManager:setTargetGroundAltitude(alt)
+		end
+		Nav:update()
+	elseif gC.maneuverMode then
 		setThrottle(1,1,1)
 		ship.apply(cD)
 	else
@@ -77,8 +94,6 @@ function onUnitStart()
 		end
 		Nav:update()
 	end
-	local onSurface = cD.isLanded or
-		(cD.nearPlanet and cD.speedKph < 1 and cD.GrndDist and cD.GrndDist < 5)
 	if onSurface then
 		inputs.brake = 1
 		inputs.brakeLock = true
@@ -88,7 +103,7 @@ function onUnitStart()
 end
 
 function printHello()
-	P'SagaHUD v4.1.10-CG'
+	P('SagaHUD v' .. (SAGA_VERSION or 'dev'))
 end
 
 function initEngines()

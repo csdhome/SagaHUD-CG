@@ -342,8 +342,8 @@ function STEC()
 			local nearGround = cD.GrndDist and cD.GrndDist <= 0.5
 			if (self.targetDist <= targetRadius) or
 				(self.state == 'LANDING' and nearGround) or
-				(self.state ~= 'LANDING' and abs(altDiff) <= 0.1) or
-				((self.takeoff or self.vertical) and self.targetDist <= 0.1) or
+				(self.state ~= 'LANDING' and not (self.takeoff or self.vertical) and abs(altDiff) <= 0.1) or
+				((self.takeoff or self.vertical) and self.targetDist <= 1) or
 				(self.landingMode and nearGround)
 			 then
 				if self.vertical or self.takeoff then
@@ -374,13 +374,21 @@ function STEC()
 				end
 
 				-- * Vertical speed limit
-				local axis = (self.landingMode or altDiff < 0) and 'worldDown' or 'worldUp'
-				local res = AxisLimiter(cD, axis, atmoLimit, altDiff)
+				-- On airless bodies during takeoff, altDiff is unreliable (getAltitude
+				-- doesn't work for asteroids), so use targetDist instead
+				local vertDist = altDiff
+				if self.takeoff and not cD.inAtmo and abs(altDiff) < 1 and self.targetDist > 1 then
+					vertDist = self.targetDist
+				end
+				local axis = (self.landingMode or vertDist < 0) and 'worldDown' or 'worldUp'
+				local res = AxisLimiter(cD, axis, atmoLimit, vertDist)
 				if res and vec3.isvector(res) then
 					delta.z = res.z
 					-- convert delta to world vec3
 					delta = localToWorld(delta, cD.worldUp, cD.wRight, cD.wFwd)
-					tmp = tmp + (delta * mass * cD.gravVert)
+					-- Use minimum gravity scale on airless bodies so thrust isn't negligible
+					local gScale = cD.inAtmo and cD.gravVert or max(cD.gravVert, 1)
+					tmp = tmp + (delta * mass * gScale)
 				else self.resetMoving() end
 			end
 		elseif self.state == "ALIGNING" then
@@ -495,6 +503,9 @@ function STEC()
 			end
 		end
 
+		-- * Airless body takeoff is handled by navCom ground stabilization
+		-- (see keyboard.lua G handler) — not by STEC direct thrust
+
 		-- * Rotation PITCH
 		-- * No PITCH in maneuver mode -> keys used as fwd/back!
 		-- if inputs.rotation.x ~= nil and inputs.rotation.x ~= 0 then
@@ -547,7 +558,8 @@ function STEC()
 		end
 
 		-- * Stop any targeted movement in case of up/down inputs.
-		if not self.alternateCM and (self.landingMode or self.takeoff or self.vertical)
+		-- Don't cancel takeoff with Space/C - let it complete
+		if not self.alternateCM and (self.landingMode or self.vertical)
 				and (inputs.up or inputs.down) then
 			self.resetMoving()
 		end
@@ -631,7 +643,10 @@ function STEC()
 				tmp = tmp - (delta * cD.gravVert * mass)
 			end
 		end
-		if not (isStartup or landed or self.landingMode or inputs.down) then
+		-- Counter gravity: on airless bodies, always compensate (no ground stabilization available)
+		-- On planets with atmosphere, skip when landed (ground engines handle it)
+		if not (isStartup or self.landingMode or inputs.down) and
+			not (landed and cD.inAtmo) then
 			tmp = tmp - (cD.gravity * mass)
 		end
 		tmp = tmp / mass
@@ -650,12 +665,13 @@ function STEC()
 			end
 		end
 		-- If in hover-range AND user selected 'primary' as engines,
-		-- only use ground engines to save fuel
+		-- only use ground engines to save fuel (atmosphere only)
 		local p1tag = self.priorityTags1
 		local p2tag = self.priorityTags2
 		if not self.landingMode and cD.GrndDist and (cD.hasvBoosters or cD.hasHovers)
 			and (gC.boostMode == 'all' or gC.boostMode == 'hybrid')
-			and cD.GrndDist > 0 and cD.GrndDist < cD.maxHoverDist then
+			and cD.GrndDist > 0 and cD.GrndDist < cD.maxHoverDist
+			and cD.inAtmo then
 			p1tag = "brake,airfoil,torque,ground,lateral,longitudinal"
 			p2tag = ""
 		end

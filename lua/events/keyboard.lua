@@ -208,7 +208,14 @@ function onAlt9()
 	if gC.maneuverMode then return end
 	setThrottle()
 	navCom:resetCommand(axisCommandId.vertical)
-	navCom:deactivateGroundEngineAltitudeStabilization()
+	-- On airless bodies, activate ground stabilization (boosters need it)
+	if not cData.inAtmo and cData.nearPlanet then
+		navCom:activateGroundEngineAltitudeStabilization()
+		gC.airlessTargetAlt = cData.GrndDist or 10
+		Nav.axisCommandManager:setTargetGroundAltitude(gC.airlessTargetAlt)
+	else
+		navCom:deactivateGroundEngineAltitudeStabilization()
+	end
 end
 
 function onWarpDown() -- Warp drive v
@@ -263,13 +270,24 @@ function onLandingGearDown() -- Landing gear v
 	if ap.enabled then ap:toggleState(false) end
 	if ship.mmbThrottle then ship.toggleMmb() end
 	gC.altitudeHold = false
-	if gC.prevStdMode then
+	-- On airless bodies, keep maneuver mode for proper engine control
+	if gC.prevStdMode and cData.inAtmo then
 		gC.maneuverMode = false
 	end
 	gC.prevStdMode = false
 
 	inputs.brake = 0
 	inputs.brakeLock = false
+
+	-- If takeoff is active, pressing G cancels it and parks
+	if ship.takeoff then
+		ship.resetMoving()
+		unit.deployLandingGears()
+		inputs.brake = 1
+		inputs.brakeLock = true
+		return
+	end
+
 	-- When already landed or in landing mode near ground, do a liftoff to hover height
 	local onSurface = cData.isLanded or
 		(cData.nearPlanet and cData.speedKph < 1 and cData.GrndDist and cData.GrndDist < 5)
@@ -280,28 +298,46 @@ function onLandingGearDown() -- Landing gear v
 			-- Atmosphere: use ground engine hover
 			return ap:toggleLandingMode(false)
 		end
-		-- Airless body: simple takeoff - release brakes and let player fly
-		navCom:deactivateGroundEngineAltitudeStabilization()
+		-- Airless body: use navCom ground stabilization for takeoff
+		-- navCom is the only system that properly commands vertical boosters
+		if gC.maneuverMode then
+			ship.resetMoving()
+			gC.maneuverMode = false
+			gC.prevStdMode = true
+		end
 		setThrottle()
+		-- Keep brakes on during takeoff to prevent lateral/forward drift
+		inputs.brake = 1
+		inputs.brakeLock = true
 		unit.retractLandingGears()
+		navCom:activateGroundEngineAltitudeStabilization()
+		gC.airlessTargetAlt = 25
+		Nav.axisCommandManager:setTargetGroundAltitude(gC.airlessTargetAlt)
+		ship.takeoff = true
 		return
 	end
 
-	-- Not landed and landing mode is active, toggle it off
-	if (ap.landingMode or ship.landingMode) then
+	-- Not landed and landing/takeoff mode is active, toggle it off
+	if (ap.landingMode or ship.landingMode or ship.takeoff) then
+		ship.takeoff = false
 		ap.landingMode = false
 		ship.landingMode = false
 		if gC.maneuverMode then
-			--return ternary(gC.maneuverMode, ship.resetManeuver(), ship.resetMoving())
 			ship.resetMoving()
-			if gC.prevStdMode then
+			-- Only revert to standard mode in atmosphere
+			if gC.prevStdMode and cData.inAtmo then
 				gC.maneuverMode = false
 			end
 		end
 		if not gC.maneuverMode then
 			setThrottle()
-			if cData.inAtmo then
+			if cData.inAtmo or cData.nearPlanet then
+				-- Activate stabilization to hover (works on airless bodies too)
 				navCom:activateGroundEngineAltitudeStabilization()
+				if not cData.inAtmo then
+					gC.airlessTargetAlt = cData.GrndDist or 10
+					Nav.axisCommandManager:setTargetGroundAltitude(gC.airlessTargetAlt)
+				end
 			else
 				navCom:deactivateGroundEngineAltitudeStabilization()
 			end
@@ -316,12 +352,16 @@ function onLandingGearDown() -- Landing gear v
 	if not cData.nearPlanet then return end
 
 	-- Finally, turn on landing mode
-	if gC.maneuverMode or not cData.inAtmo then
-		-- Maneuver mode or airless body: use STEC landing with rocket/booster control
-		if not gC.maneuverMode then
-			ship.resetManeuver()
-			gC.prevStdMode = true
-		end
+	if not cData.inAtmo and not gC.maneuverMode then
+		-- Airless body in standard mode: land via ground stabilization
+		unit.deployLandingGears()
+		navCom:activateGroundEngineAltitudeStabilization()
+		gC.airlessTargetAlt = 0
+		Nav.axisCommandManager:setTargetGroundAltitude(0)
+		ship.landingMode = true
+		ap.landingMode = false
+	elseif gC.maneuverMode then
+		-- Maneuver mode: use STEC landing
 		ship.landingMode = true
 		ap.landingMode = false
 		ship.prepLanding()
@@ -343,6 +383,10 @@ function onUpArrowDown() -- Up Arrow v
 			isStartup = false
 			inputs.brakeLock = false
 			inputs.brake = 0
+		elseif not cData.inAtmo and cData.nearPlanet then
+			-- Airless body: raise ground stabilization target
+			gC.airlessTargetAlt = (gC.airlessTargetAlt or 25) + 10
+			Nav.axisCommandManager:setTargetGroundAltitude(gC.airlessTargetAlt)
 		else
 			navCom:resetCommand(axisVert)
 			navCom:deactivateGroundEngineAltitudeStabilization()
@@ -359,6 +403,8 @@ function onUpArrowUp() -- Up Arrow ^
 	if not HUD.Config.mainMenuVisible then
 		if gC.maneuverMode then
 			if gC.altitudeHold then gC.holdAltitude = cData.altitude end
+		elseif not cData.inAtmo and cData.nearPlanet then
+			-- Airless body: nothing on release, stabilization maintains altitude
 		else
 			navCom:resetCommand(axisVert)
 			navCom:activateGroundEngineAltitudeStabilization()
@@ -374,10 +420,16 @@ function onDownArrowDown() -- Down Arrow v
 		inputs.md = true
 	else
 		inputs.down = true
-		if not (cData.isLanded or gC.maneuverMode) then
-			navCom:resetCommand(axisVert)
-			navCom:deactivateGroundEngineAltitudeStabilization()
-			navCom:updateCommandFromActionStart(axisVert, -1.0)
+		if not gC.maneuverMode and not (cData.isLanded and cData.inAtmo) then
+			if not cData.inAtmo and cData.nearPlanet then
+				-- Airless body: lower ground stabilization target
+				gC.airlessTargetAlt = math.max(2, (gC.airlessTargetAlt or 25) - 10)
+				Nav.axisCommandManager:setTargetGroundAltitude(gC.airlessTargetAlt)
+			else
+				navCom:resetCommand(axisVert)
+				navCom:deactivateGroundEngineAltitudeStabilization()
+				navCom:updateCommandFromActionStart(axisVert, -1.0)
+			end
 		end
 	end
 	gC.verticalState = true
@@ -390,8 +442,9 @@ function onDownArrowUp() -- Down Arrow ^
 	if not HUD.Config.mainMenuVisible then
 		if gC.maneuverMode then
 			if gC.altitudeHold then gC.holdAltitude = cData.altitude end
+		elseif not cData.inAtmo and cData.nearPlanet then
+			-- Airless body: nothing on release, stabilization maintains altitude
 		else
-			-- navCom.targetGroundAltitude = AutoPilot.userConfig.hoverHeight
 			navCom:resetCommand(axisVert)
 			navCom:activateGroundEngineAltitudeStabilization()
 		end
