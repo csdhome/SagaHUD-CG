@@ -125,7 +125,13 @@
     unit.setAxisCommandValue = unit['setAxisCommandValue']
 
     AxisCommandManager = _G['AxisCommandManager']
-    AxisCommandManager.activateGroundEngineAltitudeStabilization = AxisCommandManager['activateGroundEngineAltitudeStabilization']
+    local _origActivateGES = AxisCommandManager['activateGroundEngineAltitudeStabilization']
+    AxisCommandManager.activateGroundEngineAltitudeStabilization = function(self)
+        -- Allow on airless bodies near a planet (needed for vertical boosters)
+        if cData and (cData.inAtmo or cData.nearPlanet) then
+            _origActivateGES(self)
+        end
+    end
     AxisCommandManager.deactivateGroundEngineAltitudeStabilization = AxisCommandManager['deactivateGroundEngineAltitudeStabilization']
     AxisCommandManager.updateTargetGroundAltitudeFromActionStart = AxisCommandManager['updateTargetGroundAltitudeFromActionStart']
     AxisCommandManager.updateTargetGroundAltitudeFromActionLoop = AxisCommandManager['updateTargetGroundAltitudeFromActionLoop']

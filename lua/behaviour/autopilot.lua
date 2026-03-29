@@ -53,9 +53,7 @@ function()
 		construct.setDockingMode(this.userConfig.dockMode)
 
 		this:resumeFromDatabank()
-		if not globals.maneuverMode then
-			this:toggleLandingMode(this.userConfig.landingMode)
-		end
+		this.landingMode = this.userConfig.landingMode == true
 	end
 
 	function this:applyConfig()
@@ -257,12 +255,20 @@ function()
 				navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
 				navCom:setTargetSpeedCommand(axisCommandId.longitudinal,0)
 				navCom:setTargetGroundAltitude(-1)
+				-- Airless bodies: activate ground stabilization for vertical boosters
+				if not cData.inAtmo and cData.nearPlanet then
+					navCom:activateGroundEngineAltitudeStabilization()
+				end
 			end
 			links.electronics:OpenDoors()
 		elseif not gC.maneuverMode then
 			navCom:resetCommand(axisCommandId.vertical)
-			navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
-			navCom:activateGroundEngineAltitudeStabilization()
+			if cData.inAtmo or cData.nearPlanet then
+				navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
+				navCom:activateGroundEngineAltitudeStabilization()
+			else
+				navCom:deactivateGroundEngineAltitudeStabilization()
+			end
 			Nav:update()
 			unit.retractLandingGears()
 			links.electronics:CloseDoors()

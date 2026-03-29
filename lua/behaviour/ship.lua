@@ -334,7 +334,11 @@ function applyEngineCommands(targetAngularVelocity, angularAcceleration, brkAcce
 		end
 	end
 
-	if verticalCruiseIsOn then
+	-- On airless bodies near a body, ground stabilization handles vertical boosters
+	-- Don't send vertical force commands that would override it
+	if not cData.inAtmo and cData.nearPlanet then
+		-- Let navCom ground stabilization control vertical engines exclusively
+	elseif verticalCruiseIsOn then
 		if gC.verticalState or gC.waterState then
 			autoNavigationEngineTags = autoNavigationEngineTags .. ' , ' .. verticalStrafeEngineTags
 		else
@@ -379,8 +383,8 @@ function applyEngineCommands(targetAngularVelocity, angularAcceleration, brkAcce
 		Nav:setEngineForceCommand(autoNavigationEngineTags, autoNavigationAcceleration, dontKeepCollinearity, '', '', '', tolerancePercentToSkipOtherPriorities)
 	end
 
-	-- Rockets
-	Nav:setBoosterCommand('rocket_engine')
+	-- Rockets: manual only (B key toggles). No automatic firing.
+	-- Nav:setBoosterCommand('rocket_engine')
 end
 
 function validateParms()

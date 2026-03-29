@@ -8,7 +8,7 @@ function dynamicSVG()
 	local maxThrottle, throttleFill = 100, 0
 	local curAlt, maxAlt = 0, 0
 	local altFill = 0
-	local tMode = 'Travel'
+	local tMode = 'Throttle'
 	local trgtDistance = ''
 
 	if cD.position ~= nil and AutoPilot.target ~= nil then
@@ -57,7 +57,7 @@ function dynamicSVG()
 				altFill = clamp((curAlt/maxAlt)*200,0,200)
 			end
 		end
-		tMode = controlMode()
+		tMode = 'Throttle'
 	end
 
 	local fnt = 'Bank' -- for all below svg's

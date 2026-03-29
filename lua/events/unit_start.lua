@@ -66,30 +66,44 @@ function onUnitStart()
 		P"[W] Low lift for Maneuver mode."
 	end
 	gC.maneuverMode = Config:getValue(configDatabankMap.maneuverMode)
-	if gC.maneuverMode then
+	local onSurface = cD.isLanded or
+		(cD.nearPlanet and cD.speedKph < 1 and cD.GrndDist and cD.GrndDist < 5)
+	if not cD.inAtmo and cD.nearPlanet then
+		-- Airless body: use standard mode with ground stabilization
+		if gC.maneuverMode then
+			gC.maneuverMode = false
+		end
+		setThrottle()
+		if onSurface then
+			navCom:deactivateGroundEngineAltitudeStabilization()
+		else
+			-- At altitude: activate stabilization to prevent falling
+			navCom:activateGroundEngineAltitudeStabilization()
+			local alt = cD.GrndDist or 10
+			Nav.axisCommandManager:setTargetGroundAltitude(alt)
+		end
+		Nav:update()
+	elseif gC.maneuverMode then
 		setThrottle(1,1,1)
 		ship.apply(cD)
 	else
 		setThrottle()
-		if cD.isLanded then
-			Nav.axisCommandManager:setTargetGroundAltitude(0)
-		elseif cD.nearPlanet and not (links.antigrav and links.antigrav.isActive()) then
-			navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
-			navCom:activateGroundEngineAltitudeStabilization()
-		else
-			Nav.axisCommandManager:setTargetGroundAltitude(0)
+		Nav.axisCommandManager:setTargetGroundAltitude(0)
+		if not cD.inAtmo then
+			navCom:deactivateGroundEngineAltitudeStabilization()
 		end
 		Nav:update()
 	end
-	if cD.isLanded then
+	if onSurface then
 		inputs.brake = 1
 		inputs.brakeLock = true
+		AutoPilot.landingMode = true
 	end
 	gC.startup = false
 end
 
 function printHello()
-	P'SagaHUD v4.1.10-CG'
+	P('SagaHUD v' .. (SAGA_VERSION or 'dev'))
 end
 
 function initEngines()
