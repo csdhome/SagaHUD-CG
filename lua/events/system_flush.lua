@@ -57,7 +57,7 @@ function onSystemFlush()
     -- GrndDist < 1 means the ship is within 1m of its normal parking position.
     if cData.inAtmo and not cData.isLanded and not _landingCompleted
         and (AutoPilot.landingMode or ship.landingMode) then
-        if cData.GrndDist and cData.GrndDist < 5 and cData.zSpeedKPH < 10 then
+        if cData.GrndDist and cData.GrndDist < 1 and math.abs(cData.zSpeedKPH) < 10 then
             ship.landingMode = false
             AutoPilot.landingMode = false
             setThrottle()

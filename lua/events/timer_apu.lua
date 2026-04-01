@@ -8,6 +8,17 @@ function onTimerAPU()
 	local cData = cData
 
 	gCache.collision, gCache.farSide, gCache.nearSide = castIntersections()
+
+	-- Warp exit detection: auto-resume AP if it was active before warp
+	if gCache._wasWarping and not cData.warpOn then
+		gCache._wasWarping = false
+		if ap.target and not ap.enabled then
+			ap:toggleState(true)
+			P('[i] AP resumed after warp exit')
+		end
+	end
+	if cData.warpOn then gCache._wasWarping = true end
+
 	local curAltitude = cData.altitude
 	local curTargAlt = ap.targetAltitude
 
@@ -285,7 +296,12 @@ function onTimerAPU()
 					ap:onPointReached()
 				end
 			elseif ap.targetLoc == 'surface' then
-				if sameBody and projDist < 1000 then
+				-- On airless bodies use 3D distance (altitude is unreliable)
+				if sameBody and not cData.inAtmo and cData.nearPlanet then
+					if vector.dist(ap.target, cData.position) < 500 then
+						ap:onPointReached()
+					end
+				elseif sameBody and projDist < 1000 then
 					ap:onPointReached()
 				end
 			end
@@ -634,7 +650,13 @@ function onTimerAPU()
 						inputs.brake = 1
 					end
 				end
-				if curAltitude <= curTargAlt and cData.vertSpeed >= 0 then
+				-- Arrival detection: airless bodies use 3D distance (altitude unreliable)
+				if not cData.inAtmo and cData.nearPlanet then
+					local dist3D = vector.dist(ap.target, cData.position)
+					if dist3D < 200 and cData.speedKph < 50 then
+						ap:onPointReached()
+					end
+				elseif curAltitude <= curTargAlt and cData.vertSpeed >= 0 then
 					ap:onPointReached()
 				end
 

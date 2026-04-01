@@ -5,8 +5,8 @@ function Widgets.fuelInfo:build()
     strings[#strings+1] = '<b>Fuel Tanks</b>'
 
     local fuelColors = {
-        atmo = '#00dd00',
-        space = '#00aaff',
+        atmo = '#0066ff',
+        space = '#ffcc00',
         rocket = '#aa44ff'
     }
 

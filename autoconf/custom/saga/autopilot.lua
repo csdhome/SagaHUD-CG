@@ -102,11 +102,31 @@ function()
 	function this:toggleState(state)
 		if state == nil then state = not this.enabled end
 		-- do not activate AP while in warp
-		if (cData.warpOn or globals.maneuverMode) and state then return end
+		if cData.warpOn and state then return end
+		-- On airless bodies, force out of maneuver mode (STEC can't control boosters)
+		if globals.maneuverMode and state then
+			if not cData.inAtmo and cData.nearPlanet then
+				ship.resetMoving()
+				globals.maneuverMode = false
+				globals.prevStdMode = true
+			else
+				return -- Block AP in maneuver mode in atmosphere (use mini-AP instead)
+			end
+		end
 		this.enabled = state
 		if this.enabled then
 			this:toggleLandingMode(false)
 			this:updateMaxSpaceSpeed()
+			-- If landed on airless body, auto-takeoff via ground stabilization
+			if cData.isLanded and not cData.inAtmo and cData.nearPlanet then
+				inputs.brake = 1
+				inputs.brakeLock = true
+				unit.retractLandingGears()
+				navCom:activateGroundEngineAltitudeStabilization()
+				globals.airlessTargetAlt = 25
+				Nav.axisCommandManager:setTargetGroundAltitude(25)
+				ship.takeoff = true
+			end
 			SoundManager:play('autopilotEnabled')
 		else
 			resetModes()
@@ -261,11 +281,11 @@ function()
 				end
 				navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
 				navCom:setTargetSpeedCommand(axisCommandId.longitudinal,0)
-				-- Kill vertical thrust and let gravity bring the ship down.
-				-- Brakes are off so ship won't float.
+				-- Use ground stabilization to lower the ship gently to parking height.
+				-- Setting target to 0 descends to AGL position (not free-fall).
 				if cData.inAtmo then
-					navCom:deactivateGroundEngineAltitudeStabilization()
-					navCom:resetCommand(axisCommandId.vertical)
+					navCom:activateGroundEngineAltitudeStabilization()
+					navCom:setTargetGroundAltitude(0)
 				end
 				-- Airless bodies: activate ground stabilization for vertical boosters
 				if not cData.inAtmo and cData.nearPlanet then

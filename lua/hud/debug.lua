@@ -46,6 +46,8 @@ function HUD.constructDebug()
 		html[#html+1] = getAPDiv("VERTICAL")
 	elseif ship.gotoLock ~= nil then
 		html[#html+1] = getAPDiv("TRAVEL")
+	elseif gC.maneuverMode then
+		html[#html+1] = getAPDiv("MANEUVER", "orange")
 	end
 
 	if gC.safetyThrottle then

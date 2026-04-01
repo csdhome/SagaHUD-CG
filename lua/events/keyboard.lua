@@ -45,7 +45,11 @@ function onMouseUp()
 end
 
 function onAlt1()
+	-- Alt+Shift+1 toggles main menu (DU may not reliably send shift+option1,
+	-- so also allow /menu chat command as fallback)
 	if inputs.shift then return HUD.toggleMainMenu() end
+	-- If menu is open, Alt+1 closes it
+	if HUD.Config.mainMenuVisible then return HUD.toggleMainMenu(false) end
 	local ap, s, cD = AutoPilot, ship, cData
 	if not globals.maneuverMode then
 		return ap:toggleState(not ap.enabled)
@@ -346,9 +350,16 @@ function onLandingGearDown() -- Landing gear v
 	if not cData.nearPlanet then return end
 
 	-- Finally, turn on landing mode
-	if not cData.inAtmo and not gC.maneuverMode then
-		-- Airless body in standard mode: land via ground stabilization
-		setThrottle() -- Zero all throttle/engine commands to prevent rockets firing
+	if not cData.inAtmo and cData.nearPlanet then
+		-- Airless body (asteroid/moon): MUST use navCom ground stabilization
+		-- Vertical boosters don't respond to setEngineCommand on airless bodies
+		if gC.maneuverMode then
+			-- Force out of maneuver mode - STEC can't control boosters on airless
+			ship.resetMoving()
+			gC.maneuverMode = false
+			gC.prevStdMode = true
+		end
+		setThrottle()
 		inputs.brake = 1
 		inputs.brakeLock = false
 		unit.deployLandingGears()
@@ -358,7 +369,7 @@ function onLandingGearDown() -- Landing gear v
 		ship.landingMode = true
 		ap.landingMode = false
 	elseif gC.maneuverMode then
-		-- Maneuver mode: same as standard - kill engines, gravity lands the ship
+		-- Maneuver mode in atmosphere: kill engines, gravity lands the ship
 		ship.landingMode = true
 		ap.landingMode = true
 		ship.prepLanding()

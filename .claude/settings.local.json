@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npm list:*)",
-      "Bash(du-lua build:*)"
+      "Bash(du-lua build:*)",
+      "Bash(curl *)"
     ]
   }
 }

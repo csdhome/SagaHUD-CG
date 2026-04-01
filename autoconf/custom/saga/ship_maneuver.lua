@@ -627,7 +627,8 @@ function STEC()
 			end
 
 			-- dampen Z-axis (vertical): stop when not moving up/down
-			if not (self.gotoLock or inputs.up or inputs.down) then
+			-- Skip during landing mode — let soft descent control handle vertical speed
+			if not (self.gotoLock or inputs.up or inputs.down or self.landingMode) then
 				if not cD.inAtmo and not self.vertical and cD.gravVert > 9.9
 					and cD.GrndDist and cD.GrndDist >= 0 and cD.GrndDist < 10 then
 					delta.z = (locV.z * 1.5)
@@ -644,9 +645,33 @@ function STEC()
 			end
 		end
 		-- Counter gravity: compensate for gravity so the ship hovers.
-		-- Skip when landed in atmo (ground engines handle it),
-		-- or when landing mode is active (let gravity bring the ship down).
-		if not (landed and cD.inAtmo) and not self.landingMode then
+		-- When landed: no counter-gravity needed (on the ground).
+		-- When landing mode: controlled soft descent with ground proximity braking.
+		-- When pressing down (C key): no counter-gravity (free descent).
+		if landed or inputs.down then
+			-- No counter-gravity: on ground or player wants to descend
+		elseif self.landingMode then
+			-- Soft landing: controlled descent, faster high up, gentle near ground
+			local vSpeedMs = cD.vertSpeed or 0 -- negative = descending
+			local grndDist = cD.GrndDist or 100
+			local gravForce = cD.gravity * mass
+
+			-- Target descent speed: faster when high, slow near ground
+			local targetMs
+			if grndDist > 100 then
+				targetMs = -5.0 -- 18 km/h above 100m
+			elseif grndDist > 30 then
+				targetMs = -3.0 -- ~11 km/h 30-100m
+			else
+				targetMs = -1.5 -- ~5 km/h below 30m to touchdown
+			end
+
+			-- Proportional speed correction
+			local speedError = targetMs - vSpeedMs
+			local factor = 1.0 + speedError * 0.2
+			factor = math.max(0.7, math.min(factor, 1.5))
+			tmp = tmp - (gravForce * factor)
+		else
 			tmp = tmp - (cD.gravity * mass)
 		end
 		tmp = tmp / mass
@@ -672,7 +697,9 @@ function STEC()
 			and (gC.boostMode == 'all' or gC.boostMode == 'hybrid')
 			and cD.GrndDist > 0 and cD.maxHoverDist and cD.GrndDist < cD.maxHoverDist
 			and cD.inAtmo then
-			p1tag = "brake,airfoil,torque,ground,lateral,longitudinal"
+			-- Include vertical engines alongside ground engines so the ship can
+			-- still climb when pressing Space (ground engines alone cap at hover range)
+			p1tag = "brake,airfoil,torque,ground,vertical,lateral,longitudinal"
 			p2tag = ""
 		end
 		unit.setEngineCommand(
@@ -685,6 +712,9 @@ function STEC()
 			p2tag,
 			""
 		)
+		-- Kill rocket engines — rockets are manual-only (B key).
+		-- Send zero thrust to rockets to prevent them from auto-firing.
+		unit.setEngineThrust("rocket_engine", 0)
 		if isStartup and landed then
 			inputs.brakeLock = true
 			inputs.brake = 1

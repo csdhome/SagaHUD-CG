@@ -198,13 +198,15 @@ local Collision = (function()
     end
 
     --- Check for imminent collision and apply emergency braking.
-    --- Uses velocity-based ray casting (existing castIntersections).
+    --- Uses velocity-based ray casting for atlas bodies AND proximity-based
+    --- detection for airless bodies (asteroids/moons) using GrndDist.
     --- @return boolean collisionImminent
     function this.checkEmergencyBraking()
         local gC = globals
         local ap = AutoPilot
         local collisionImminent = false
 
+        -- Atlas body collision (planets/moons in atlas)
         if gC.collision and type(gC.collision) == 'table' then
             local brakeDist = round2(cData.brakes.distance * 1.2)
             local vSpeed = cData.zSpeedKPH
@@ -221,22 +223,43 @@ local Collision = (function()
                     collisionImminent = true
                 end
             end
+        end
 
-            -- Emergency braking (requires throttleBurnProtection)
-            if ap.userConfig.throttleBurnProtection then
-                if not ap.enabled and not ap.landingMode and not gC.orbitalHold then
-                    if collisionImminent then
-                        gC.safetyThrottle = true
-                        if controlMode() == 'cruise' then
-                            swapControl()
-                        end
-                        navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
+        -- Airless body proximity collision (asteroids/moons using GrndDist)
+        -- This covers bodies not in the atlas or when approaching the nearest body
+        if not collisionImminent and not cData.inAtmo and cData.nearPlanet
+            and cData.GrndDist and cData.GrndDist > 0 then
+            local vSpeed = cData.zSpeedKPH
+            local grndDist = cData.GrndDist
+            -- Estimate vertical brake distance from current descent speed
+            local descentSpeedMs = math.abs(vSpeed) / 3.6
+            local maxBrakeAccel = cData.MaxKinematics and cData.MaxKinematics.Up or 0
+            local vBrakeDist = 0
+            if maxBrakeAccel > 0 then
+                vBrakeDist = (descentSpeedMs * descentSpeedMs) / (2 * maxBrakeAccel)
+            end
+            -- Collision imminent if descending and brake distance exceeds ground distance
+            if vSpeed < -5 and vBrakeDist * 1.5 >= grndDist then
+                collisionImminent = true
+                gC.collisionBody = cData.body
+                gC.collisionAlert = true
+            end
+        end
+
+        -- Emergency braking (requires throttleBurnProtection)
+        if ap.userConfig.throttleBurnProtection then
+            if not ap.enabled and not ap.landingMode and not gC.orbitalHold then
+                if collisionImminent then
+                    gC.safetyThrottle = true
+                    if controlMode() == 'cruise' then
+                        swapControl()
                     end
-                    if gC.safetyThrottle and collisionImminent then
-                        gC.collisionBrake = true
-                        brakeCtrl = 30
-                        inputs.brake = 1
-                    end
+                    navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
+                end
+                if gC.safetyThrottle and collisionImminent then
+                    gC.collisionBrake = true
+                    brakeCtrl = 30
+                    inputs.brake = 1
                 end
             end
         end

@@ -98,7 +98,7 @@ function onUnitStart()
 		end
 		Nav:update()
 	elseif gC.maneuverMode then
-		setThrottle(1,1,1)
+		setThrottle()
 		ship.apply(cD)
 	else
 		setThrottle()
