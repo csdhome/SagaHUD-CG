@@ -136,7 +136,7 @@ function Widgets.mainMenu:build()
 	local screenHeight = HUD.screenHeight
 	local padding = self.padding * HUD.Config.scaleMultiplier
 	-- Head
-	rendered = rendered .. '<style>' .. HUD.staticCSS.menuCss .. '></style>'
+	rendered = rendered .. '<style>' .. HUD.staticCSS.menuCss .. '</style>'
 
 	-- Choose one to determine scaling type
 	rendered = rendered .. '<svg style="position:absolute;top:' .. padding .. ';left:' .. padding .. ';" height="100vh" viewBox="0 0 '..screenWidth..' '..screenHeight..'" preserveAspectRatio="xMidYMid" overflow="visible" xmlns="http://www.w3.org/2000/svg">\n'

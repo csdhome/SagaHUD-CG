@@ -87,6 +87,7 @@ dockWidget = true --export: Show docking widget (toggle with /dock command)
 
 maxLandingSpeedHigh = 200 --export Maneuver mode: Max landing speed above 1 km altitude. Default: 200
 maxLandingSpeedLow = 100 --export Maneuver mode: Max landing speed below 1 km altitude. Default: 100
+landingDescentSpeed = 20 --export: (Landing Descent Speed km/h) Standard mode G-key landing target speed. Default: 20
 travelAlt = 900 --export Maneuver mode: default travel altitude for AP targets. Default: 900
 maxVBrakeSpeed = 300 --export: (km/h) Maximum vertical brake speed outside final bubble. Default: 300
 autoAGGAdjust = false --export: When AGG active, AP auto-controls AGG altitude
@@ -102,6 +103,7 @@ globals = {
 	apMode = 'standby',
 	arMode = 'none',
 	boostMode = 'all',
+	boostersActive = false,
 	brakeState = false,
 	brakeTrigger = false,
 	cameraAim = false,
@@ -205,6 +207,7 @@ _G.maxRoll = maxRoll; _G.maxSpaceSpeed = maxSpaceSpeed; _G.shieldManage = shield
 _G.spaceCapableOverride = spaceCapableOverride
 _G.throttleBurnProtection = throttleBurnProtection; _G.wingStallAngle = wingStallAngle
 _G.maxLandingSpeedHigh = maxLandingSpeedHigh; _G.maxLandingSpeedLow = maxLandingSpeedLow
+_G.landingDescentSpeed = landingDescentSpeed
 _G.travelAlt = travelAlt; _G.maxVBrakeSpeed = maxVBrakeSpeed
 _G.aimStrength = aimStrength; _G.boostModeOverride = boostModeOverride
 _G.pitchSpeedFactor = pitchSpeedFactor; _G.yawSpeedFactor = yawSpeedFactor

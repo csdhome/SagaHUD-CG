@@ -17,10 +17,11 @@ Set-Content -Path $confPath -Value $conf -Encoding UTF8
 # Inject full slot definitions into conf for proper element linking
 $conf = Get-Content -Path $confPath -Raw
 $oldSlots = "slots:`n  core:`n    name: core`n    class: CoreUnit`n    select: null`n    type:`n      events: []`n      methods: []"
-$newSlots = "slots:`n  core:`n    class: CoreUnit`n  databank:`n    class: databank`n    select: manual`n  radar:`n    class: RadarPVPUnit`n    select: all`n  warpdrive:`n    class: WarpDriveUnit`n  antigrav:`n    class: AntiGravityGeneratorUnit`n  shield:`n    class: ShieldGeneratorUnit`n  telemeter:`n    class: TelemeterUnit"
+$newSlots = "slots:`n  core:`n    class: CoreUnit`n  databank:`n    class: databank`n    select: manual`n  radar:`n    class: RadarPVPUnit`n    select: manual`n  warpdrive:`n    class: WarpDriveUnit`n  antigrav:`n    class: AntiGravityGeneratorUnit`n  shield:`n    class: ShieldGeneratorUnit`n  telemeter:`n    class: TelemeterUnit`n  hover:`n    class: HoverEngine`n    select: all`n  vtol:`n    class: VerticalBooster`n    select: all`n  gearswitch:`n    class: ManualSwitchUnit`n    select: manual"
 $conf = $conf -replace [regex]::Escape($oldSlots), $newSlots
 Set-Content -Path $confPath -Value $conf -Encoding UTF8
 
-(Get-Content -Path "$PWD/out/release/Saga.conf" -Raw) `
-    -replace "Saga Saga", "SagaHUD $version" |
-    Out-File -Encoding UTF8 "$PWD/SagaHud.conf"
+$finalConf = (Get-Content -Path "$PWD/out/release/Saga.conf" -Raw) `
+    -replace "Saga Saga", "SagaHUD $version"
+$finalConf | Out-File -Encoding UTF8 "$PWD/SagaHud.conf"
+$finalConf | Set-Content -Path "$PWD/out/release/Saga.conf" -Encoding UTF8

@@ -1,5 +1,36 @@
 function onSystemUpdate()
 	if not links or links.core == nil or construct == nil then return end
+
+	-- Navigator: poll all linked databanks for incoming waypoint from DU Starmap Navigator
+	for _, db in ipairs(links.databanks) do
+		local ok, raw = pcall(function() return db.getStringValue("nav_saga_dest") end)
+		if ok and raw ~= nil and raw ~= "" then
+			-- Clear immediately so it fires only once
+			db.setStringValue("nav_saga_dest", "")
+			local sep = string.find(raw, "|")
+			if sep then
+				local name   = string.sub(raw, 1, sep - 1)
+				local posStr = string.sub(raw, sep + 1)
+				if name ~= "" and string.find(posStr, "::pos") then
+					local target = convertToWorldCoordinates(posStr)
+					if target ~= nil then
+						resetAP()
+						AutoPilot:setTarget(target)
+						system.print("[NAV] Target: " .. name)
+						-- Auto-engage autopilot if Navigator's AutoFly is on
+						local afOk, afVal = pcall(function()
+							return db.getStringValue("autofly")
+						end)
+						if afOk and afVal == "1" and not AutoPilot.enabled then
+							AutoPilot:toggleState(true)
+						end
+					end
+				end
+			end
+			break
+		end
+	end
+
 	cData = getConstructData(construct, links.core)
 	playerData = getPlayerData()
 	aggData = getAggData()
@@ -46,4 +77,12 @@ function onSystemUpdate()
 	Nav:update()
 	HUD:update()
 	Electronics:update()
+	-- Deploy landing gear from update context (unit.deployLandingGears does not work from flush).
+	-- _pendingGearDeploy is set when landing mode starts; cleared once gear is confirmed deployed.
+	if _pendingGearDeploy then
+		deployLandingGears()
+		if cData.isLanded or cData.speedKph < 1 then
+			_pendingGearDeploy = false
+		end
+	end
 end

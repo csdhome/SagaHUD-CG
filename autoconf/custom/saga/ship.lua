@@ -172,7 +172,7 @@ function getTargetAngularVelocity(finalPitchInput, finalRollInput, finalYawInput
 					gC.aimTarget = 'Flat'
 					tav = (circleNormal(ap.target)):cross(cData.wFwd) + cData.wVert:cross(cData.worldUp)
 				end
-				if (cData.altitude - getAltitude(ap.target)) < 100 then
+				if (cData.altitude - getAltitude(ap.target)) < 250 then
 					ap:toggleState(false)
 					ap:toggleLandingMode(true)
 				end
@@ -334,10 +334,12 @@ function applyEngineCommands(targetAngularVelocity, angularAcceleration, brkAcce
 		end
 	end
 
-	-- On airless bodies near a body, ground stabilization handles vertical boosters
-	-- Don't send vertical force commands that would override it
+	-- On airless bodies: navCom ground stabilization handles vertical boosters exclusively.
+	-- In atmo landing: we deactivate ground stabilization and use a sustained vertical axis
+	-- command (updateCommandFromActionStart -1.0) with verticalState=true so the else branch
+	-- passes the downward vtol force through — same as holding the C key manually.
 	if not cData.inAtmo and cData.nearPlanet then
-		-- Let navCom ground stabilization control vertical engines exclusively
+		-- Let navCom ground stabilization control vertical engines exclusively on airless
 	elseif verticalCruiseIsOn then
 		if gC.verticalState or gC.waterState then
 			autoNavigationEngineTags = autoNavigationEngineTags .. ' , ' .. verticalStrafeEngineTags
@@ -384,7 +386,13 @@ function applyEngineCommands(targetAngularVelocity, angularAcceleration, brkAcce
 	end
 
 	-- Rockets: manual only (B key toggles). No automatic firing.
-	-- Nav:setBoosterCommand('rocket_engine')
+	-- Rocket engines match 'thrust analog longitudinal', so Nav:setEngineForceCommand
+	-- above would otherwise command them. Override via a rocket-specific Nav call last,
+	-- which takes priority over the earlier longitudinal command for those engines.
+	-- unit.setEngineThrust cannot override Nav commands — must use the Nav system.
+	if not gC.boostersActive then
+		Nav:setEngineForceCommand('rocket_engine', vec3(), false)
+	end
 end
 
 function validateParms()
@@ -430,7 +438,7 @@ function applyShipInputs()
 				clamp(brkAccel.y,-brkSens2,brkSens2),
 				clamp(brkAccel.z,-brkSens2,brkSens2))
 	end
-	if ap.landingMode then
+	if ap.landingMode and gC.maneuverMode then
 		brkAccel = brkAccel * 9
 	elseif gC.altitudeHold then
 		brkAccel = -inputs.brake * cData.wFwd * ((cData.forwardSpeed + cData.lateralSpeed)*3.6)

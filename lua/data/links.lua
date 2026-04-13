@@ -15,7 +15,9 @@ links = {
     hoverCount = 0,
 	screen = nil,
     vboosters = {},
-    vBoosterCount = 0
+    vBoosterCount = 0,
+    landingGears = {},
+    gearSwitch = nil,
 }
 
 function scanLinks()
@@ -57,8 +59,32 @@ function scanLinks()
 			elseif elementClass:find("verticalbooster") then
 				table.insert(links.vboosters, slot)
                 links.vBoosterCount = links.vBoosterCount + 1
+			elseif elementClass:find("landinggear") then
+				table.insert(links.landingGears, slot)
 			end
 		end
+	end
+end
+
+function deployLandingGears()
+	unit.deployLandingGears()
+	for _, gear in ipairs(links.landingGears) do
+		if gear.deploy then gear.deploy() end
+	end
+	if links.gearSwitch then
+		links.gearSwitch.deactivate()
+		links.gearSwitch.activate()
+	end
+end
+
+function retractLandingGears()
+	unit.retractLandingGears()
+	for _, gear in ipairs(links.landingGears) do
+		if gear.retract then gear.retract() end
+	end
+	if links.gearSwitch then
+		links.gearSwitch.activate()
+		links.gearSwitch.deactivate()
 	end
 end
 
@@ -81,6 +107,8 @@ function finaliseLinks()
 			table.insert(links.electronics.doors, switch)
 		elseif switchName:lower():find('forcefield') then
 			table.insert(links.electronics.forcefields, switch)
+		elseif switchName:lower():find('gear') then
+			links.gearSwitch = switch
 		else
 			table.insert(links.electronics.switches, switch)
 		end

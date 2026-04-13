@@ -36,18 +36,21 @@ function HUD.constructDebug()
 	html[#html+1] = [[<div class="atmoAlert" style="transform:translate(30vw,0vh);text-align:right;">Vertical Speed: ]]..
 		(rnd(cD.zSpeedKPH,1))..eDiv
 
-	if ap.enabled and not gC.maneuverMode then
-		html[#html+1] = getAPDiv("AUTOPILOT")
-	elseif ap.landingMode or ship.landingMode or cD.isLanded then
+	-- PARKING MODE takes priority over AUTOPILOT so it's visible during AP landing
+	if ap.landingMode or ship.landingMode or cD.isLanded then
 		html[#html+1] = getAPDiv("PARKING MODE")
 	elseif ship.takeoff then
 		html[#html+1] = getAPDiv("TAKEOFF")
 	elseif ship.vertical then
 		html[#html+1] = getAPDiv("VERTICAL")
-	elseif ship.gotoLock ~= nil then
-		html[#html+1] = getAPDiv("TRAVEL")
 	elseif gC.maneuverMode then
-		html[#html+1] = getAPDiv("MANEUVER", "orange")
+		if ship.gotoLock ~= nil then
+			html[#html+1] = getAPDiv("TRAVEL")
+		else
+			html[#html+1] = getAPDiv("MANEUVER", "orange")
+		end
+	elseif ap.enabled then
+		html[#html+1] = getAPDiv("AUTOPILOT")
 	end
 
 	if gC.safetyThrottle then

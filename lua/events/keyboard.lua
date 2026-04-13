@@ -196,6 +196,11 @@ function onAlt9()
 	gC.maneuverMode = not gC.maneuverMode
 	Config:setValue(configDatabankMap.maneuverMode, gC.maneuverMode)
 	if gC.maneuverMode then return end
+	-- Reset booster state and immediately suppress rockets on this transition tick.
+	-- unit.setEngineThrust cannot override Nav commands, so use the Nav system directly.
+	gC.boostersActive = false
+	Nav:setEngineForceCommand('rocket_engine', vec3(), false)
+	unit.setEngineThrust("rocket_engine", 0)
 	-- Switching OUT of maneuver: activate ground stabilization FIRST to prevent
 	-- vertical control gap that causes the ship to sink during transition
 	if not cData.inAtmo and cData.nearPlanet then
@@ -221,6 +226,7 @@ function onAntigravDown() -- Antigrav v
 end
 
 function onBoosterDown() -- Booster v
+	globals.boostersActive = not globals.boostersActive
 	Nav:toggleBoosters()
 end
 
@@ -293,7 +299,8 @@ function onLandingGearDown() -- Landing gear v
 		ship.landingMode = false
 		ap.landingMode = false
 		if not gC.maneuverMode and cData.inAtmo then
-			-- Atmosphere: use ground engine hover
+			-- Atmosphere: zero throttle first so forward engines don't fire on liftoff
+			setThrottle()
 			return ap:toggleLandingMode(false)
 		end
 		-- Airless body: use navCom ground stabilization for takeoff

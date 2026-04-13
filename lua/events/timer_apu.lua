@@ -69,6 +69,7 @@ function onTimerAPU()
 		gCache.apMode = 'Off'
 	end
 
+
 	if ap.userConfig.throttleBurnProtection then --Atmo throttle overspeed protection
 		if not ap.enabled and not ap.landingMode and not gCache.orbitalHold and not inputs.manualBrake then
 			local cPitch = utils.round(cData.rpy.pitch)
@@ -140,7 +141,10 @@ function onTimerAPU()
 
 	gCache.aggAP = false
 
-	if ap.enabled or gCache.altitudeHold then
+	-- Skip altitude hold during out-of-atmo phase of a suborbital hop.
+	-- altHold fights the natural ballistic arc when the ship is above the atmosphere.
+	local orbitHop = not cData.inAtmo and gCache.apMode == 'Atmo Travel'
+	if (ap.enabled or gCache.altitudeHold) and not orbitHop then
 		altHold()
 	end
 
@@ -316,7 +320,29 @@ function onTimerAPU()
 			gCache.holdAltitude = aggData.aggAltitude
 		elseif body then
 			if body.hasAtmosphere then
-				gCache.holdAltitude = math.max(math.max(body.surfaceMaxAltitude+1500,curTargAlt+1000), body.atmoAltitude*0.5)
+				-- In atmo same-body travel, cap altitude to avoid the 50km near-vacuum overshoot issue.
+				-- For trips >= 60km use 8000m so the ship climbs above dense atmo and can travel faster.
+				-- reEntry and orbit modes still use the high formula.
+				if sameBody and cData.inAtmo and ap.targetLoc == 'surface' and gCache.apMode == 'Atmo Travel' then
+					local longRange = projDist >= 60000
+					local baseAlt = longRange and 8000 or (body.surfaceMaxAltitude + 1500)
+					local desiredAlt = math.max(baseAlt, curTargAlt + 1000)
+					-- Ramp the altitude target gradually so the ship tracks it without pinning at max pitch.
+					-- ~2m/tick at 60Hz = ~120m/s ramp, close to most ships' vertical climb rate.
+					if not gCache._atmoHoldAlt then
+						gCache._atmoHoldAlt = curAltitude
+					end
+					local step = 2
+					if desiredAlt > gCache._atmoHoldAlt then
+						gCache._atmoHoldAlt = math.min(gCache._atmoHoldAlt + step, desiredAlt)
+					else
+						gCache._atmoHoldAlt = math.max(gCache._atmoHoldAlt - step, desiredAlt)
+					end
+					gCache.holdAltitude = gCache._atmoHoldAlt
+				else
+					gCache._atmoHoldAlt = nil  -- reset when leaving Atmo Travel mode
+					gCache.holdAltitude = math.max(math.max(body.surfaceMaxAltitude+1500,curTargAlt+1000), body.atmoAltitude*0.5)
+				end
 			else
 				gCache.holdAltitude = math.max(body.surfaceMaxAltitude+3000,curTargAlt+1000)
 			end
@@ -567,20 +593,28 @@ function onTimerAPU()
 			end
 			if cData.inAtmo and not ap.waitForBubble then
 				SpdControl = '11'
-					navCom:setThrottleCommand(axisLong, getThrottle(cData.burnSpeedKph-150))
-					if math.abs(getVelocityTargetAngle()) > 5 then
-						brakeCtrl = 13.1
-						inputs.brake = 1
-					end
-
-					if cData.speedKph > cData.burnSpeedKph-100 then
-						brakeCtrl = 14
-						inputs.brake = 1
-					end
-					if cData.brakes.distance*1.5 >= projDist or projDist < 300 then
-						gCache.brakeTrigger = true
-					end
+				navCom:setThrottleCommand(axisLong, getThrottle(cData.burnSpeedKph-150))
+				if math.abs(getVelocityTargetAngle()) > 5 then
+					brakeCtrl = 13.1
+					inputs.brake = 1
+				end
+				if cData.speedKph > cData.burnSpeedKph-100 then
+					brakeCtrl = 14
+					inputs.brake = 1
+				end
+				if cData.brakes.distance*1.5 >= projDist or projDist < 300 then
+					gCache.brakeTrigger = true
+				end
 			end
+		end
+
+		-- Ship has climbed above the atmosphere during an atmo travel trip (e.g. atmo ends at 5500m,
+		-- cruise altitude is 8000m). inAtmo = false so the block above doesn't run.
+		-- Target orbital speed for a proper suborbital hop rather than maxSpaceSpeed.
+		if sameBody and not cData.inAtmo and gCache.apMode == 'Atmo Travel' and ap.targetLoc == 'surface' then
+			local orbitSpd = cData.orbitFocus.orbitSpeed * 3.6
+			SpdControl = '11o'
+			navCom:setThrottleCommand(axisLong, getThrottle(orbitSpd))
 		end
 
 		if gCache.apMode == 'reEntry' then
@@ -625,6 +659,14 @@ function onTimerAPU()
 				end
 				SpdControl = '14'
 				navCom:setThrottleCommand(axisLong, 0)
+
+				-- If horizontally stopped but still short of target, drift forward slowly.
+				-- Speed is proportional to distance so it eases to a stop directly over the pad.
+				if gCache.horizontalStopped and projDist > 50 then
+					SpdControl = '14d'
+					navCom:setThrottleCommand(axisLong, getThrottle(math.min(projDist * 0.05, 30)))
+					inputs.brake = 0
+				end
 
 				if  ((not gCache.horizontalStopped) and (cData.brakes.distance*1.4 >= (gCache.lastProjectedDistance - 150))) or (cData.zSpeedKPH < -1000) then
 					brakeCtrl = 16
@@ -696,7 +738,7 @@ function onTimerAPU()
 				gCache.waterState = false
 				navCom:resetCommand(axisVert)
 				navCom:activateGroundEngineAltitudeStabilization()
-				navCom:setTargetGroundAltitude(-1)
+				navCom:setTargetGroundAltitude(0)
 			end
 		else
 			navCom:deactivateGroundEngineAltitudeStabilization()

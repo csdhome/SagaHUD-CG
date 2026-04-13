@@ -184,10 +184,11 @@ local function AxisLimiterEx(cD, axis, atmoLimit, distance)
 
 	local axMax = 1080
 	if cD.inAtmo then
-		-- if axis == "worldDown" or cD.altitude > atmoLimit then
-		if vertical and cD.altitude > atmoLimit then
+		if isVertical and cD.altitude > atmoLimit then
 			axMax = ap.userConfig.landSpeedHigh
 		elseif axis == "worldUp" then
+			axMax = ap.userConfig.landSpeedLow
+		elseif axis == "worldDown" then
 			axMax = ap.userConfig.landSpeedLow
 		end
 	elseif isVertical and cD.altitude > 90000 then
@@ -385,6 +386,10 @@ end
 
 function colorSpan(color, text)
 	return '<span style="color:'..color..'">'..text..'</span>'
+end
+
+function class(className)
+	return ' class="' .. className .. '"'
 end
 
 function colIfTrue(bVal, color)

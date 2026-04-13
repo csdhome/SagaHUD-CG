@@ -71,59 +71,59 @@ function HUD.update()
 	if HUD.dynamicSVG == nil then
 		dynamicSVG()
 	end
+
+	-- When the main menu is open, render ONLY the menu widget and nothing else.
+	-- All other content (constructDebug, attitudeIndicator, other widgets) pushes
+	-- the total HTML over DU's system.setScreen() size limit and blanks the screen.
 	rendered = HUD.constructDebug()
 
 	local widgets = {}
-
-	-- commented out to save space!
-	-- if gC.debug and Widgets.debugInfo then
-	-- 	table.insert(widgets, Widgets.debugInfo)
-	-- 	Widgets.debugInfo.anchor = anchorENUM.topLeft
-	-- end
 
 	table.insert(widgets, Widgets.controls)
 	Widgets.controls.anchor = anchorENUM.topRight
 	Widgets.controls.width = 180
 	if HUD.Config.mainMenuVisible then
+		-- Menu open: render controls + menu only. Skip sidebar widgets and
+		-- attitude indicator so total HTML stays under DU's setScreen limit.
 		table.insert(widgets, Widgets.mainMenu)
-	end
-	table.insert(widgets, Widgets.fuelInfo)
-	Widgets.fuelInfo.anchor = anchorENUM.topLeft
-	Widgets.fuelInfo.width = 220
-	table.insert(widgets, Widgets.infos)
-	Widgets.infos.width = 150
-	Widgets.infos.anchor = anchorENUM.topLeft
-	-- core panel has fps impact, that's why a timer is used now!
-	if HUD.Config.coreWidget then
-		table.insert(widgets, Widgets.core)
-	end
-
-	Widgets.core.anchor = anchorENUM.top
-	Widgets.core.width = 800
-	if links.antigrav then
-		table.insert(widgets, Widgets.aggInfo)
-		Widgets.aggInfo.anchor = anchorENUM.topLeft
-		Widgets.aggInfo.width = 150
-	end
-	if links.warpdrive ~= nil then
-		table.insert(widgets, Widgets.warpInfo)
-		Widgets.warpInfo.anchor = anchorENUM.topLeft
-		Widgets.warpInfo.width = 180
-	end
-	gC.radarD = #Radar.radarDynamic > 0
-	gC.radarSt = #Radar.radarStatic > 0
-	gC.radarA = #Radar.radarAbandoned > 0
-	gC.radarAl = #Radar.radarAlien > 0
-	gC.radarSp = #Radar.radarSpace > 0
-	gC.radarF = #Radar.radarFriend > 0
-	if Radar.radar ~= nil and Radar.boxesVisible then
-		if gC.radarA then table.insert(widgets, Widgets.radarAbandoned) end
-		if gC.radarSt then table.insert(widgets, Widgets.radarStatic) end
-		if gC.radarD then table.insert(widgets, Widgets.radarDynamic) end
-		if gC.radarF then table.insert(widgets, Widgets.radarFriend) end
-		if gC.radarAl then table.insert(widgets, Widgets.radarAlien) end
-		if gC.radarSp then table.insert(widgets, Widgets.radarSpace) end
-		table.insert(widgets, Widgets.radarThreat)
+	else
+		table.insert(widgets, Widgets.fuelInfo)
+		Widgets.fuelInfo.anchor = anchorENUM.topLeft
+		Widgets.fuelInfo.width = 220
+		table.insert(widgets, Widgets.infos)
+		Widgets.infos.width = 150
+		Widgets.infos.anchor = anchorENUM.topLeft
+		Widgets.core.anchor = anchorENUM.top
+		Widgets.core.width = 800
+		-- core panel has fps impact, that's why a timer is used now!
+		if HUD.Config.coreWidget then
+			table.insert(widgets, Widgets.core)
+		end
+		if links.antigrav then
+			table.insert(widgets, Widgets.aggInfo)
+			Widgets.aggInfo.anchor = anchorENUM.topLeft
+			Widgets.aggInfo.width = 150
+		end
+		if links.warpdrive ~= nil then
+			table.insert(widgets, Widgets.warpInfo)
+			Widgets.warpInfo.anchor = anchorENUM.topLeft
+			Widgets.warpInfo.width = 180
+		end
+		gC.radarD = #Radar.radarDynamic > 0
+		gC.radarSt = #Radar.radarStatic > 0
+		gC.radarA = #Radar.radarAbandoned > 0
+		gC.radarAl = #Radar.radarAlien > 0
+		gC.radarSp = #Radar.radarSpace > 0
+		gC.radarF = #Radar.radarFriend > 0
+		if Radar.radar ~= nil and Radar.boxesVisible then
+			if gC.radarA then table.insert(widgets, Widgets.radarAbandoned) end
+			if gC.radarSt then table.insert(widgets, Widgets.radarStatic) end
+			if gC.radarD then table.insert(widgets, Widgets.radarDynamic) end
+			if gC.radarF then table.insert(widgets, Widgets.radarFriend) end
+			if gC.radarAl then table.insert(widgets, Widgets.radarAlien) end
+			if gC.radarSp then table.insert(widgets, Widgets.radarSpace) end
+			table.insert(widgets, Widgets.radarThreat)
+		end
 	end
 
 	-- Widget rendering, should probably be somewhere else but eh
@@ -148,7 +148,9 @@ function HUD.update()
 	--	rendered = rendered .. HUD.renderButtons()
 	--end
 
-	rendered = rendered .. HUD.renderAttitudeIndicator()
+	if not HUD.Config.mainMenuVisible then
+		rendered = rendered .. HUD.renderAttitudeIndicator()
+	end
 	system.setScreen(rendered)
 end
 

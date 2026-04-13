@@ -56,6 +56,7 @@ function onUnitStart()
 	dynamicSVG()
 	HUD:init()
 	links.electronics:SwitchesOn()
+	system.print('[DBG] gearSwitch=' .. tostring(links.gearSwitch ~= nil))
 
 	-- Main class for Maneuver mode highly customized by @tobitege
 	-- Based on Horizon v1.19x flight script by the ShadowTemplar org.
@@ -81,7 +82,7 @@ function onUnitStart()
 	end
 	gC.maneuverMode = Config:getValue(configDatabankMap.maneuverMode)
 	local onSurface = cD.isLanded or
-		(cD.nearPlanet and cD.speedKph < 1 and cD.GrndDist and cD.GrndDist < 5)
+		(cD.nearPlanet and cD.speedKph < 1 and cD.GrndDist and cD.GrndDist < 20)
 	if not cD.inAtmo and cD.nearPlanet then
 		-- Airless body: use standard mode with ground stabilization
 		if gC.maneuverMode then
@@ -101,17 +102,21 @@ function onUnitStart()
 		setThrottle()
 		ship.apply(cD)
 	else
+		-- Standard mode in atmo: always deactivate stabilization at startup.
+		-- DU may carry over a stale altitude target from a previous session which
+		-- would cause the ship to immediately fly to that old target.
+		navCom:deactivateGroundEngineAltitudeStabilization()
 		setThrottle()
 		Nav.axisCommandManager:setTargetGroundAltitude(0)
-		if not cD.inAtmo then
-			navCom:deactivateGroundEngineAltitudeStabilization()
-		end
 		Nav:update()
 	end
 	if onSurface then
 		inputs.brake = 1
 		inputs.brakeLock = true
-		AutoPilot.landingMode = true
+		_landingCompleted = true -- prevent landing completion block from firing at startup
+		-- Do NOT set AutoPilot.landingMode here: if G is pressed while landingMode=true,
+		-- the keyboard handler interprets it as "liftoff to hoverHeight" rather than
+		-- toggling parking mode, which causes powerful ships to immediately fly up.
 	end
 	gC.startup = false
 end

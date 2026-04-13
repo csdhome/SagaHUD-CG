@@ -121,7 +121,7 @@ function()
 			if cData.isLanded and not cData.inAtmo and cData.nearPlanet then
 				inputs.brake = 1
 				inputs.brakeLock = true
-				unit.retractLandingGears()
+				retractLandingGears()
 				navCom:activateGroundEngineAltitudeStabilization()
 				globals.airlessTargetAlt = 25
 				Nav.axisCommandManager:setTargetGroundAltitude(25)
@@ -269,23 +269,25 @@ function()
 		Config:setValue(configDatabankMap.landingMode, this.landingMode)
 		if gC.maneuverMode then return end
 		if this.landingMode then
+			_landingCompleted = false
+			_pendingGearDeploy = true
 			gC.altitudeHold = false
 			gC.orbitalHold = false
 			gC.rotationDampening = true
 			inputs.brake = 0
 			inputs.brakeLock = false
-			unit.deployLandingGears()
+			deployLandingGears()
 			if not gC.maneuverMode then
 				if unit.getControlMode() == 1 then
 					swapControl()
 				end
 				navCom:setThrottleCommand(axisCommandId.longitudinal, 0)
 				navCom:setTargetSpeedCommand(axisCommandId.longitudinal,0)
-				-- Use ground stabilization to lower the ship gently to parking height.
-				-- Setting target to 0 descends to AGL position (not free-fall).
 				if cData.inAtmo then
-					navCom:activateGroundEngineAltitudeStabilization()
-					navCom:setTargetGroundAltitude(0)
+					-- Descent is handled in onFlush by deactivating ground stabilisation
+					-- each tick (same as the C key) and using proportional braking.
+					navCom:deactivateGroundEngineAltitudeStabilization()
+					gC.verticalState = false
 				end
 				-- Airless bodies: activate ground stabilization for vertical boosters
 				if not cData.inAtmo and cData.nearPlanet then
@@ -294,6 +296,7 @@ function()
 			end
 			links.electronics:OpenDoors()
 		elseif not gC.maneuverMode then
+			gC.verticalState = false
 			navCom:resetCommand(axisCommandId.vertical)
 			if cData.inAtmo or cData.nearPlanet then
 				navCom:setTargetGroundAltitude(AutoPilot.userConfig.hoverHeight)
@@ -302,7 +305,7 @@ function()
 				navCom:deactivateGroundEngineAltitudeStabilization()
 			end
 			Nav:update()
-			unit.retractLandingGears()
+			retractLandingGears()
 			links.electronics:CloseDoors()
 			inputs.brake = 0
 		end
@@ -340,7 +343,10 @@ function altHold()
 		local minmax = 500 + cD.constructSpeed
 		gCache.targetPitch = (utils.smoothstep(altDiff, -minmax, minmax) - 0.5) * 2 * ap.userConfig.maxPitch
 		if altDiff < 0 and cData.inAtmo then
-			gCache.targetPitch = gCache.targetPitch/6
+			-- Graduated divider: gentle for small overshoot, stronger correction the further above target.
+			-- At 100m over: divide by ~5. At 500m+: divide by 1 (full correction, no nosedive risk at cruise).
+			local divisor = math.max(1, 6 - math.abs(altDiff) / 100)
+			gCache.targetPitch = gCache.targetPitch / divisor
 		end
 		local pitch = cD.rpy.pitch
 		local autoPitchThreshold = 0.1

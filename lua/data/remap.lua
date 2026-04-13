@@ -107,7 +107,7 @@
     Navigator.setBoosterCommand = Navigator['setBoosterCommand']
     Navigator.control = unit
     unit.isRemoteControlled = unit['isRemoteControlled']
-    unit.isAnyLandingGearExtended = unit['isAnyLandingGearExtended']
+    unit.isAnyLandingGearDeployed = unit['isAnyLandingGearDeployed']
     unit.deployLandingGears = unit['deployLandingGears']
     unit.retractLandingGears = unit['retractLandingGears']
     unit.isAnyHeadlightSwitchedOn = unit['isAnyHeadlightSwitchedOn']

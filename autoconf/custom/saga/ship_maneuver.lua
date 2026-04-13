@@ -36,6 +36,7 @@ function STEC()
 	-- flag if ship is above target
 	self.isAbove = false
 	-- several flight mode flags
+	self.directLanding = false
 	self.gotoLock = nil
 	self.landingMode = false
 	self.traverse = false
@@ -103,9 +104,9 @@ function STEC()
 		if self.landingMode then
 			inputs.up = false
 			inputs.down = false
-			unit.deployLandingGears()
+			deployLandingGears()
 		else
-			unit.retractLandingGears()
+			retractLandingGears()
 		end
 	end
 
@@ -115,6 +116,7 @@ function STEC()
 			gC.altitudeHold = false
 		end
 		self.dt = nil
+		self.directLanding = false
 		self.followGravity = true
 		self.gotoLock = nil
 		self.landingMode = false
@@ -584,8 +586,17 @@ function STEC()
 			tmp, atmp = self.miniPilot(cD, tmp, atmp)
 		end
 
-		if self.landingMode and landed and not gC.startup then
+		local nearLanded = landed or (cD.GrndDist and cD.GrndDist < 5 and (cD.vertSpeed or 0) < 1)
+		if self.landingMode and nearLanded and not gC.startup then
 			self.state = 'LANDED'
+			self.landingMode = false
+			if gC.prevStdMode then
+				gC.maneuverMode = false
+				gC.prevStdMode = false
+				inputs.brake = 1
+				inputs.brakeLock = true
+				setThrottle()
+			end
 			return
 		end
 
@@ -651,26 +662,45 @@ function STEC()
 		if landed or inputs.down then
 			-- No counter-gravity: on ground or player wants to descend
 		elseif self.landingMode then
-			-- Soft landing: controlled descent, faster high up, gentle near ground
-			local vSpeedMs = cD.vertSpeed or 0 -- negative = descending
-			local grndDist = cD.GrndDist or 100
+			local vSpeedMs = cD.vertSpeed or 0
+			local grndDist = cD.GrndDist or 200
 			local gravForce = cD.gravity * mass
 
-			-- Target descent speed: faster when high, slow near ground
-			local targetMs
-			if grndDist > 100 then
-				targetMs = -5.0 -- 18 km/h above 100m
-			elseif grndDist > 30 then
-				targetMs = -3.0 -- ~11 km/h 30-100m
+			if self.directLanding then
+				-- directLanding: pure speed cap. NO baseline upward force — gravity always
+				-- pulls the ship down. Only brake when falling faster than the limit.
+				-- This guarantees the ship reaches the ground; gear absorbs the final impact.
+				local maxFallMs
+				if grndDist > 50 then
+					maxFallMs = 5.0  -- ~18 km/h from altitude
+				elseif grndDist > 10 then
+					maxFallMs = 2.0  -- ~7 km/h intermediate
+				else
+					maxFallMs = 0.8  -- ~3 km/h final approach to gear
+				end
+				if vSpeedMs > maxFallMs then
+					local factor = 1.0 + (vSpeedMs - maxFallMs) * 0.5
+					tmp = tmp - (gravForce * math.min(factor, 4.0))
+				end
+				-- Below maxFallMs: no counter-gravity → full gravity ensures descent continues.
 			else
-				targetMs = -1.5 -- ~5 km/h below 30m to touchdown
+				-- Standard soft landing block (miniPilot path).
+				-- vertSpeed is POSITIVE when descending (dot with -worldVertical).
+				-- Min factor = 0 so any upward motion (bounce) gets zero counter-gravity.
+				local targetMs
+				if grndDist > 100 then
+					targetMs = 5.0
+				elseif grndDist > 30 then
+					targetMs = 3.0
+				elseif grndDist > 10 then
+					targetMs = 1.5
+				else
+					targetMs = 0.5
+				end
+				local factor = 1.0 + (vSpeedMs - targetMs) * 0.5
+				factor = math.max(0.0, math.min(factor, 4.0))
+				tmp = tmp - (gravForce * factor)
 			end
-
-			-- Proportional speed correction
-			local speedError = targetMs - vSpeedMs
-			local factor = 1.0 + speedError * 0.2
-			factor = math.max(0.7, math.min(factor, 1.5))
-			tmp = tmp - (gravForce * factor)
 		else
 			tmp = tmp - (cD.gravity * mass)
 		end
@@ -763,6 +793,9 @@ end
 
 function shipLandingTask(cD)
 	if not ship.landingMode then return end
+	-- directLanding: G-key gravity-fall mode; skip miniPilot path entirely.
+	-- Near the ground, auto-engage inputs.down to override vBoosters and settle.
+	if ship.directLanding then return end
 	local dist = cD.altitude
 	-- If a body is close then don't use plain 0 but an estimate
 	if cD.body then
